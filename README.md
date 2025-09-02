@@ -11,11 +11,13 @@
 - **Cross-Platform**: Runs on Windows and Debian/Ubuntu Linux
 - **Comprehensive Dork Database**: 100+ predefined Google dork queries across 10 categories
 - **User-Friendly GUI**: Clean tkinter interface with progress tracking
+- **Fun Splash Screen**: Animated MissDorking character with cheeky cybersecurity humor 💋
 - **Export Capabilities**: Generate professional PDF reports and CSV files
 - **Rate Limiting**: Built-in delays to respect Google's terms of service
 - **Configurable**: Customizable results per query and delay settings
 - **Category Selection**: Choose specific dork categories to scan
 - **Real-time Progress**: Live progress tracking with detailed status updates
+- **Playful UI**: Fun completion messages and Easter eggs throughout
 
 ## 📋 Dork Categories
 

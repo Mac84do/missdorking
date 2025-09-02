@@ -10,8 +10,11 @@
 
 - **Cross-Platform**: Runs on Windows and Debian/Ubuntu Linux
 - **Comprehensive Dork Database**: 100+ predefined Google dork queries across 10 categories
+- **🎯 Hybrid Scraper Technology**: Advanced direct site analysis that finds login pages even when Google blocks traditional dorking
+- **Multi-Engine Search**: Fallback support for Bing and DuckDuckGo when Google rate limits
 - **User-Friendly GUI**: Clean tkinter interface with progress tracking
 - **Fun Splash Screen**: Animated MissDorking character with cheeky cybersecurity humor 💋
+- **🧠 Smart Analysis**: AI-powered result analysis with security relevance scoring and risk prioritization
 - **Export Capabilities**: Generate professional PDF reports and CSV files
 - **Rate Limiting**: Built-in delays to respect Google's terms of service
 - **Configurable**: Customizable results per query and delay settings
@@ -87,6 +90,51 @@ The installer will:
 3. **Start Dorking**: Click "Start Dorking" to begin the scan
 4. **Monitor Progress**: Watch the real-time progress and results
 5. **Export Results**: Use "Export PDF" or "Export CSV" to save your findings
+
+## 🎯 Hybrid Scraper Technology
+
+**NEW!** MissDorking now includes advanced hybrid scraper technology that finds login pages and admin panels even when Google blocks traditional dorking queries.
+
+### How It Works
+
+1. **Traditional Google Dorking** - Runs comprehensive dork queries across all selected categories
+2. **Direct Site Analysis** - When Google rate limits occur, automatically switches to direct site analysis:
+   - **Homepage Parsing**: Scans the target homepage for login-related links
+   - **Common Path Enumeration**: Tests common login paths (`/login`, `/admin`, `/account`, etc.)
+   - **Form Analysis**: Detects login forms with password/username fields
+   - **Smart Detection**: Uses AI-powered analysis to identify login indicators
+
+### Hybrid Results Example
+
+```
+=== Login & Admin Pages ===
+site:example.com inurl:login: 0 results  (Google blocked)
+site:example.com inurl:admin: 0 results  (Google blocked)
+
+=== DIRECT SITE ANALYSIS ===
+Direct site analysis of example.com: 4 results
+  🎯 Log in - Example Corp
+    https://example.com/account/login
+  🎯 Admin Portal - Example Corp  
+    https://example.com/admin
+  🎯 Customer Login
+    https://example.com/customer/signin
+  🎯 Management Dashboard
+    https://admin.example.com/
+
+=== SECURITY ASSESSMENT SUMMARY ===
+High Risk Findings: 4
+Login Pages Found: 4
+Sensitive Files: 0
+```
+
+### Advantages
+
+- **🚫 Bypasses Google Rate Limiting** - No more "0 results" due to blocks
+- **🎯 Higher Accuracy** - Direct analysis often finds more login pages than Google search
+- **⚡ Faster Results** - No waiting for Google retry delays
+- **🔍 Comprehensive Coverage** - Combines search engine results with direct analysis
+- **🧠 Smart Scoring** - AI-powered risk assessment and confidence scoring
 
 ## 📊 Sample Output
 

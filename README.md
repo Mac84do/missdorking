@@ -6,6 +6,14 @@
 ![Python](https://img.shields.io/badge/python-3.7%2B-green)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
+## 💖 Support the Project
+
+If you enjoy this tool and find it useful for your security research, please consider supporting the development!
+
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/macedo84)
+
+Your support helps maintain and improve MissDorking with new features and updates. Thank you! ☕
+
 ## 🚀 Features
 
 - **Cross-Platform**: Runs on Windows and Debian/Ubuntu Linux

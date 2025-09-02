@@ -16,6 +16,7 @@ import webbrowser
 from google_dorks import get_all_dorks_for_domain, get_dork_count, GOOGLE_DORKS
 from scraper import GoogleScraper
 from alternative_scraper import AlternativeScraper
+from hybrid_scraper_fixed import HybridScraper
 from export import ResultExporter
 from analysis import ResultAnalyzer
 from splash_screen import show_splash_screen
@@ -323,6 +324,38 @@ class DorkingApp:
                 
                 results[category] = category_results
                 
+            # Add hybrid scraper results for better coverage
+            self.root.after(0, lambda: self.progress_var.set("Running direct site analysis for additional coverage..."))
+            
+            try:
+                hybrid_scraper = HybridScraper()
+                direct_results = hybrid_scraper.analyze_domain_directly(domain)
+                
+                if direct_results:
+                    # Add direct analysis results to the "Login & Admin Pages" category
+                    if "Login & Admin Pages" not in results:
+                        results["Login & Admin Pages"] = {}
+                    
+                    # Create a special query for direct analysis results
+                    direct_query = f"Direct site analysis of {domain}"
+                    results["Login & Admin Pages"][direct_query] = direct_results
+                    
+                    self.root.after(0, lambda: self.append_to_results(
+                        f"\n=== DIRECT SITE ANALYSIS ===\n{direct_query}: {len(direct_results)} results\n"))
+                    
+                    for result in direct_results:
+                        self.root.after(0, lambda r=result: 
+                                       self.append_to_results(f"  🎯 {r['title'][:80]}...\n    {r['url']}\n"))
+                    
+                    self.root.after(0, lambda: self.append_to_results("\n"))
+                    
+                    logging.info(f"Direct analysis found {len(direct_results)} additional results")
+                else:
+                    logging.info("Direct analysis found no additional results")
+                    
+            except Exception as e:
+                logging.warning(f"Direct analysis failed: {e}")
+            
             # Perform enhanced analysis on results
             self.root.after(0, lambda: self.progress_var.set("Analyzing results for security relevance..."))
             analyzed_results = self.analyzer.categorize_results(results)

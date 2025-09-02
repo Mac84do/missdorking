@@ -91,6 +91,7 @@ def test_file_structure():
         'google_dorks.py',
         'scraper.py',
         'export.py',
+        'splash_screen.py',
         'requirements.txt',
         'README.md',
         'install_windows.bat',

@@ -16,6 +16,7 @@ import webbrowser
 from google_dorks import get_all_dorks_for_domain, get_dork_count, GOOGLE_DORKS
 from scraper import GoogleScraper
 from export import ResultExporter
+from splash_screen import show_splash_screen
 
 class DorkingApp:
     def __init__(self, root):
@@ -76,8 +77,8 @@ class DorkingApp:
         main_frame.columnconfigure(1, weight=1)
         main_frame.rowconfigure(4, weight=1)
         
-        # Title
-        title_label = ttk.Label(main_frame, text="Google Dorking Tool", 
+        # Title with playful touch
+        title_label = ttk.Label(main_frame, text="MissDorking™ - Google Dorking Tool 💋", 
                                font=('Arial', 16, 'bold'))
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
         
@@ -321,12 +322,24 @@ class DorkingApp:
                 
             self.results = results
             
-            # Completion
+            # Completion with fun messages
             total_results = sum(sum(len(results) for results in cat.values()) 
                               for cat in self.results.values())
             
-            self.root.after(0, lambda: self.progress_var.set(f"Completed! Found {total_results} total results"))
-            self.root.after(0, lambda: self.append_to_results(f"\n=== SCAN COMPLETE ===\nTotal results found: {total_results}\n"))
+            # Fun completion messages
+            fun_messages = [
+                f"💄 Scan complete! Found {total_results} juicy results! 💋",
+                f"👠 Done dorking around! {total_results} results ready to serve! ✨",
+                f"🔥 Mission accomplished! {total_results} targets acquired! 💅",
+                f"💎 All done, darling! {total_results} beautiful results! 😘",
+                f"🌟 Finished with style! {total_results} results at your service! 💖"
+            ]
+            
+            import random
+            fun_message = random.choice(fun_messages)
+            
+            self.root.after(0, lambda: self.progress_var.set(fun_message))
+            self.root.after(0, lambda: self.append_to_results(f"\n=== SCAN COMPLETE ===\n{fun_message}\n\n💋 MissDorking says: 'Hope you enjoyed the show!' 💋\n"))
             
             logging.info(f"Dorking completed for {domain}. Total results: {total_results}")
             
@@ -429,16 +442,27 @@ class DorkingApp:
 
 def main():
     """Main application entry point"""
-    root = tk.Tk()
-    app = DorkingApp(root)
     
+    def start_main_app():
+        """Start the main application after splash screen"""
+        root = tk.Tk()
+        app = DorkingApp(root)
+        
+        try:
+            root.mainloop()
+        except KeyboardInterrupt:
+            logging.info("Application interrupted by user")
+        except Exception as e:
+            logging.error(f"Unexpected error: {e}")
+            messagebox.showerror("Fatal Error", f"An unexpected error occurred:\n{e}")
+    
+    # Show splash screen first, then start main app
     try:
-        root.mainloop()
-    except KeyboardInterrupt:
-        logging.info("Application interrupted by user")
+        show_splash_screen(start_main_app)
     except Exception as e:
-        logging.error(f"Unexpected error: {e}")
-        messagebox.showerror("Fatal Error", f"An unexpected error occurred:\n{e}")
+        # If splash fails, start main app directly
+        logging.warning(f"Splash screen failed: {e}")
+        start_main_app()
 
 if __name__ == "__main__":
     main()

@@ -12,9 +12,10 @@ from urllib.parse import urljoin, urlparse
 import logging
 
 class HybridScraper:
-    def __init__(self, delay_range=(2, 5)):
+    def __init__(self, delay_range=(0.1, 0.3)):
         """
         Initialize hybrid scraper with multiple strategies
+        OPTIMIZED FOR LUDICROUS SPEED! 🚀
         
         Args:
             delay_range (tuple): Min and max delay between requests in seconds
@@ -118,7 +119,7 @@ class HybridScraper:
             self._ensure_rate_limit()
             logging.info(f"Analyzing homepage: {base_url}")
             
-            response = self.session.get(base_url, timeout=15)
+            response = self.session.get(base_url, timeout=8)  # Faster timeout
             
             if response.status_code == 200:
                 soup = BeautifulSoup(response.content, 'html.parser')
@@ -188,7 +189,7 @@ class HybridScraper:
                 full_url = base_url.rstrip('/') + path
                 logging.info(f"Checking path: {full_url}")
                 
-                response = self.session.get(full_url, timeout=10, allow_redirects=True)
+                response = self.session.get(full_url, timeout=5, allow_redirects=True)  # Super fast timeout
                 
                 # Consider it a valid login page if:
                 # 1. Status code is 200 (OK)

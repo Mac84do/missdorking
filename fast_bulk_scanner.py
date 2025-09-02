@@ -15,7 +15,7 @@ from hybrid_scraper_fixed import HybridScraper
 from analysis import ResultAnalyzer
 
 class FastBulkScanner:
-    def __init__(self, max_workers=5, delay_range=(0.5, 1.5)):
+    def __init__(self, max_workers=8, delay_range=(0.1, 0.3)):
         """
         Fast bulk scanner optimized for speed
         
@@ -51,7 +51,7 @@ class FastBulkScanner:
         logging.info(f"[{thread_id}] Starting fast scan of {domain}")
         
         try:
-            # Use hybrid scraper with minimal delays
+            # Use hybrid scraper with LUDICROUS SPEED delays 🚀
             scraper = HybridScraper(delay_range=self.delay_range)
             
             # Only do direct analysis - skip Google completely

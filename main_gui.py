@@ -15,6 +15,7 @@ import webbrowser
 # Import our modules
 from google_dorks import get_all_dorks_for_domain, get_dork_count, GOOGLE_DORKS
 from scraper import GoogleScraper
+from alternative_scraper import AlternativeScraper
 from export import ResultExporter
 from analysis import ResultAnalyzer
 from splash_screen import show_splash_screen

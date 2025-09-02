@@ -16,6 +16,7 @@ import webbrowser
 from google_dorks import get_all_dorks_for_domain, get_dork_count, GOOGLE_DORKS
 from scraper import GoogleScraper
 from export import ResultExporter
+from analysis import ResultAnalyzer
 from splash_screen import show_splash_screen
 
 class DorkingApp:
@@ -30,6 +31,7 @@ class DorkingApp:
         # Initialize components
         self.scraper = GoogleScraper()
         self.exporter = ResultExporter()
+        self.analyzer = ResultAnalyzer()
         self.results = {}
         self.is_running = False
         
@@ -320,19 +322,32 @@ class DorkingApp:
                 
                 results[category] = category_results
                 
-            self.results = results
+            # Perform enhanced analysis on results
+            self.root.after(0, lambda: self.progress_var.set("Analyzing results for security relevance..."))
+            analyzed_results = self.analyzer.categorize_results(results)
+            
+            # Generate and display analysis summary
+            summary_report = self.analyzer.generate_report_summary(analyzed_results)
+            self.root.after(0, lambda: self.append_to_results(summary_report))
+            
+            self.results = analyzed_results
             
             # Completion with fun messages
             total_results = sum(sum(len(results) for results in cat.values()) 
-                              for cat in self.results.values())
+                              for cat in results.values())
             
-            # Fun completion messages
+            # Get summary stats
+            summary = analyzed_results.get('_summary', {})
+            high_risk_count = summary.get('high_risk_count', 0)
+            login_count = summary.get('login_pages_count', 0)
+            
+            # Enhanced completion messages with analysis
             fun_messages = [
-                f"💄 Scan complete! Found {total_results} juicy results! 💋",
-                f"👠 Done dorking around! {total_results} results ready to serve! ✨",
-                f"🔥 Mission accomplished! {total_results} targets acquired! 💅",
-                f"💎 All done, darling! {total_results} beautiful results! 😘",
-                f"🌟 Finished with style! {total_results} results at your service! 💖"
+                f"💄 Scan complete! Found {total_results} results ({high_risk_count} high-risk, {login_count} login pages)! 💋",
+                f"👠 Done dorking around! {total_results} results ready ({high_risk_count} critical findings)! ✨",
+                f"🔥 Mission accomplished! {total_results} targets acquired ({login_count} login portals found)! 💅",
+                f"💎 All done, darling! {total_results} beautiful results ({high_risk_count} high-priority)! 😘",
+                f"🌟 Finished with style! {total_results} results analyzed and prioritized! 💖"
             ]
             
             import random

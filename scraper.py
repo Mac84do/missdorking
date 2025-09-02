@@ -12,7 +12,7 @@ from fake_useragent import UserAgent
 import logging
 
 class GoogleScraper:
-    def __init__(self, delay_range=(2, 4)):
+    def __init__(self, delay_range=(1, 3)):
         """
         Initialize the Google scraper
         
@@ -75,6 +75,26 @@ class GoogleScraper:
             logging.info(f"Exponential backoff: extra {extra_delay} seconds after {self.request_count} requests")
             time.sleep(extra_delay)
     
+    def _detect_google_block(self, response_text):
+        """Detect if Google is blocking or showing captcha"""
+        block_indicators = [
+            'captcha',
+            'unusual traffic',
+            'automated queries',
+            'blocked',
+            'verify you are human',
+            'our systems have detected unusual traffic',
+            'sorry, but your computer or network',
+            'distil_r_blocked',
+            'access denied'
+        ]
+        
+        text_lower = response_text.lower()
+        for indicator in block_indicators:
+            if indicator in text_lower:
+                return True
+        return False
+    
     def search_google(self, query, num_results=10, start=0, retry_count=0):
         """
         Search Google for a specific query with retry logic
@@ -124,6 +144,18 @@ class GoogleScraper:
                     return results
             
             response.raise_for_status()
+            
+            # Check for block indicators in response
+            if self._detect_google_block(response.text):
+                self.blocked_count += 1
+                if retry_count < max_retries:
+                    backoff_time = (2 ** retry_count) * 20  # Longer backoff for blocks
+                    logging.warning(f"Google block detected! Backing off for {backoff_time} seconds...")
+                    time.sleep(backoff_time)
+                    return self.search_google(query, num_results, start, retry_count + 1)
+                else:
+                    logging.error(f"Max retries exceeded due to blocks for query: {query}")
+                    return results
             
             # Parse results
             soup = BeautifulSoup(response.content, 'html.parser')

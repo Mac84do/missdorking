@@ -12,7 +12,7 @@ from fake_useragent import UserAgent
 import logging
 
 class GoogleScraper:
-    def __init__(self, delay_range=(5, 10)):
+    def __init__(self, delay_range=(2, 4)):
         """
         Initialize the Google scraper
         
@@ -24,6 +24,7 @@ class GoogleScraper:
         self.session = requests.Session()
         self.request_count = 0
         self.last_request_time = 0
+        self.blocked_count = 0
         
         # Set up headers to mimic a real browser
         self.session.headers.update({
@@ -127,35 +128,79 @@ class GoogleScraper:
             # Parse results
             soup = BeautifulSoup(response.content, 'html.parser')
             
-            # Find search result containers (multiple selectors for different Google layouts)
-            search_results = soup.find_all('div', class_='g') or soup.find_all('div', class_='tF2Cxc')
+            # Find search result containers (try multiple selectors)
+            search_results = (
+                soup.find_all('div', class_='g') or
+                soup.find_all('div', class_='tF2Cxc') or
+                soup.find_all('div', class_='rc') or
+                soup.find_all('div', {'class': lambda x: x and 'g' in x}) or
+                soup.find_all('div', {'data-ved': True})
+            )
+            
+            # If no results found with div selectors, try broader search
+            if not search_results:
+                search_results = soup.find_all('a', href=True)
+                # Filter to only include relevant links
+                filtered_results = []
+                for link in search_results:
+                    href = link.get('href', '')
+                    if href.startswith('http') and 'google.com' not in href:
+                        parent = link.find_parent('div')
+                        if parent:
+                            filtered_results.append(parent)
+                search_results = filtered_results[:20]  # Limit to first 20
             
             for result in search_results:
                 try:
-                    # Extract title
-                    title_elem = result.find('h3') or result.find('h1')
-                    title = title_elem.get_text() if title_elem else "No title"
+                    # Extract title (try multiple selectors)
+                    title_elem = (
+                        result.find('h3') or
+                        result.find('h1') or
+                        result.find('h2') or
+                        result.find('a', href=True)
+                    )
                     
-                    # Extract URL
-                    link_elem = result.find('a')
-                    url = link_elem.get('href') if link_elem else "No URL"
+                    if title_elem:
+                        title = title_elem.get_text().strip()
+                    else:
+                        title = "No title"
                     
-                    # Extract snippet
-                    snippet_elem = (result.find('span', class_=['aCOpRe', 'st']) or 
-                                  result.find('div', class_=['BNeawe', 's3v9rd']) or
-                                  result.find('span', class_='hgKElc'))
-                    snippet = snippet_elem.get_text() if snippet_elem else "No snippet"
+                    # Extract URL (try multiple approaches)
+                    link_elem = result.find('a', href=True)
+                    if link_elem:
+                        url = link_elem.get('href')
+                        # Clean up Google redirect URLs
+                        if url.startswith('/url?q='):
+                            url = urllib.parse.unquote(url.split('&')[0][7:])
+                    else:
+                        url = "No URL"
                     
-                    if url and url.startswith('http') and len(url) > 10:
+                    # Extract snippet (try multiple selectors)
+                    snippet_elem = (
+                        result.find('span', class_=['aCOpRe', 'st', 'hgKElc']) or 
+                        result.find('div', class_=['BNeawe', 's3v9rd', 'IsZvec']) or
+                        result.find('span', {'data-ved': True}) or
+                        result.find('div', string=True)
+                    )
+                    
+                    if snippet_elem:
+                        snippet = snippet_elem.get_text().strip()
+                    else:
+                        snippet = "No snippet"
+                    
+                    # Only include valid HTTP URLs that are not Google URLs
+                    if (url and url.startswith('http') and len(url) > 10 and 
+                        'google.com' not in url and 'googleusercontent.com' not in url):
+                        
                         results.append({
-                            'title': title.strip(),
+                            'title': title[:200],  # Limit title length
                             'url': url,
-                            'snippet': snippet.strip(),
+                            'snippet': snippet[:500],  # Limit snippet length
                             'query': query
                         })
                         
                 except Exception as e:
-                    logging.warning(f"Error parsing search result: {e}")
+                    logging.debug(f"Error parsing search result: {e}")
                     continue
             
             logging.info(f"Found {len(results)} results for: {query}")

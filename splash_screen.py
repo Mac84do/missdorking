@@ -19,6 +19,9 @@ class SplashScreen:
         self.callback = callback
         self.root = tk.Tk()
         self.setup_window()
+        # Randomly select from spicy variants
+        import random
+        self.spicy_variant = random.randint(1, 4)  # 1 in 4 chance for spicy splash
         self.create_content()
         
     def setup_window(self):
@@ -47,8 +50,10 @@ class SplashScreen:
         main_frame = tk.Frame(self.root, bg='#1a1a2e')
         main_frame.pack(expand=True, fill='both', padx=20, pady=20)
         
-        # ASCII Art - Sexier hacker girl with more attitude
-        ascii_art = """
+        # ASCII Art variants - pick randomly
+        ascii_arts = [
+            # Normal variant (75% chance)
+            """
     ╔═══════════════════════════════════════════╗
     ║              MissDorking™                 ║
     ║          💄 SEXY • SMART • DEADLY 💄       ║
@@ -57,7 +62,7 @@ class SplashScreen:
       💋 "The Hottest Tool in Cybersecurity" 💋
     
                      ಠ ͜ʖ ಠ
-                   /.👑.\   💅
+                   /.👑.\
                   /.|💻|.\
                    \|___|/
                   /  \ /  \
@@ -67,7 +72,7 @@ class SplashScreen:
     ┌──────────────────────────────────────────┐
     │  "I'm not just pretty... I'm DANGEROUS!" │
     │                                          │
-    │  🔥 109 Seductive Google Dork Queries    │
+    │  🔥 38 Seductive Google Dork Queries     │
     │  💎 Irresistible PDF Reports             │
     │  🌹 Cross-Platform Goddess               │
     │  ⚡ Ethical Hacking with STYLE            │
@@ -75,7 +80,45 @@ class SplashScreen:
     │                                          │
     │     "Hack hard, look fabulous!" 💅       │
     └──────────────────────────────────────────┘
+        """,
+            # Spicy variant 1 (25% chance)
+            """
+    ╔═══════════════════════════════════════════╗
+    ║              MissDorking™                 ║
+    ║        💋 IRRESISTIBLE HACKER BABE 💋      ║
+    ╚═══════════════════════════════════════════╝
+    
+      🔥 "Too Hot for Firewalls to Handle" 🔥
+    
+                      ( ͡~ ͜ʖ ͡°)
+                    /    👑    \
+                   (  (.Y.)  )  💅
+                   |    💻    |
+                    \   ___   /
+                   / \ /   \ / \
+                  👠         👠
+              💋 Hack me if you can! 💋
+    
+    ┌──────────────────────────────────────────┐
+    │  "Warning: May cause server crashes       │
+    │   from pure sexiness overload! 😘"        │
+    │                                          │
+    │  💥 38 Explosive Dork Queries            │
+    │  💋 Reports that make you blush           │
+    │  🍑 Cross-Platform Seductress            │
+    │  🔞 Adults-Only Hacking Experience       │
+    │  😈 Naughty Code & Wicked Algorithms     │
+    │                                          │
+    │    "I'll penetrate ANY system! 😏"       │
+    └──────────────────────────────────────────┘
         """
+        ]
+        
+        # Select ASCII art (75% normal, 25% spicy)
+        if self.spicy_variant == 1:  # 1 in 4 chance
+            ascii_art = ascii_arts[1]  # Spicy variant
+        else:
+            ascii_art = ascii_arts[0]  # Normal variant
         
         # ASCII art label with custom font
         art_label = tk.Label(

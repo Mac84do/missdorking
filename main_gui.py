@@ -115,7 +115,7 @@ class DorkingApp:
         ttk.Label(options_frame, text="Delay between requests (seconds):").grid(
             row=0, column=2, sticky=tk.W, padx=(20, 0), pady=2)
         
-        self.delay_var = tk.StringVar(value="2-5")
+        self.delay_var = tk.StringVar(value="5-10")
         delay_entry = ttk.Entry(options_frame, textvariable=self.delay_var, width=10)
         delay_entry.grid(row=0, column=3, sticky=tk.W, padx=(10, 0), pady=2)
         

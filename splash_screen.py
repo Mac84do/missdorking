@@ -47,31 +47,34 @@ class SplashScreen:
         main_frame = tk.Frame(self.root, bg='#1a1a2e')
         main_frame.pack(expand=True, fill='both', padx=20, pady=20)
         
-        # ASCII Art - Playful hacker girl
+        # ASCII Art - Sexier hacker girl with more attitude
         ascii_art = """
-    ╔════════════════════════════════════════╗
-    ║             MissDorking™               ║
-    ╚════════════════════════════════════════╝
+    ╔═══════════════════════════════════════════╗
+    ║              MissDorking™                 ║
+    ║          💄 SEXY • SMART • DEADLY 💄       ║
+    ╚═══════════════════════════════════════════╝
     
-         👩‍💻 The Sexy Side of Cybersecurity 👩‍💻
+      💋 "The Hottest Tool in Cybersecurity" 💋
     
-                    ( ͡° ͜ʖ ͡°)
-                   /|     |\\
-                  / |  💻  | \\
-                    |_____|
-                   /       \\
-                  /  👠   👠  \\
-                 /_____________\\
+                     ಠ ͜ʖ ಠ
+                   /.👑.\   💅
+                  /.|💻|.\
+                   \|___|/
+                  /  \ /  \
+                 👠     👠
+               💋 Miss Dorking 💋
     
-    ┌─────────────────────────────────────────┐
-    │  "I dork... therefore I pwn!" 💋       │
-    │                                         │
-    │  🔍 109 Google Dork Queries             │
-    │  📊 Professional PDF Reports            │
-    │  🌐 Cross-Platform Compatible           │
-    │  🛡️  Ethical Hacking Tools              │
-    │  💕 Made with Love & Code               │
-    └─────────────────────────────────────────┘
+    ┌──────────────────────────────────────────┐
+    │  "I'm not just pretty... I'm DANGEROUS!" │
+    │                                          │
+    │  🔥 109 Seductive Google Dork Queries    │
+    │  💎 Irresistible PDF Reports             │
+    │  🌹 Cross-Platform Goddess               │
+    │  ⚡ Ethical Hacking with STYLE            │
+    │  💋 Coded with Love & Attitude           │
+    │                                          │
+    │     "Hack hard, look fabulous!" 💅       │
+    └──────────────────────────────────────────┘
         """
         
         # ASCII art label with custom font
@@ -162,8 +165,8 @@ class SplashScreen:
         self.animation_thread.daemon = True
         self.animation_thread.start()
         
-        # Auto-close after 4 seconds
-        self.root.after(4000, self.close_splash)
+        # Auto-close after 7 seconds (to show all sexy messages)
+        self.root.after(7000, self.close_splash)
         
         # Show the splash screen
         self.root.mainloop()
@@ -171,11 +174,14 @@ class SplashScreen:
     def animate_loading(self):
         """Animate the loading messages"""
         messages = [
-            "Warming up the dorks... 💄",
-            "Applying digital lipstick... 💋",
-            "Putting on hacking heels... 👠",
-            "Loading sexy queries... 🔥",
-            "Ready to pwn with style! ✨"
+            "Booting up in style... 💄",
+            "Applying digital makeup... 💋",
+            "Slipping into hacking heels... 👠",
+            "Fluttering cyber-eyelashes... 💅", 
+            "Perfecting the art of seduction... 💎",
+            "Loading 109 irresistible queries... 🔥",
+            "Adjusting my crown... 👑",
+            "Ready to seduce some servers! ✨😘"
         ]
         
         for i, message in enumerate(messages):

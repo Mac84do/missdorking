@@ -12,7 +12,7 @@ from fake_useragent import UserAgent
 import logging
 
 class GoogleScraper:
-    def __init__(self, delay_range=(2, 5)):
+    def __init__(self, delay_range=(5, 10)):
         """
         Initialize the Google scraper
         
@@ -22,6 +22,8 @@ class GoogleScraper:
         self.delay_range = delay_range
         self.ua = UserAgent()
         self.session = requests.Session()
+        self.request_count = 0
+        self.last_request_time = 0
         
         # Set up headers to mimic a real browser
         self.session.headers.update({
@@ -49,21 +51,49 @@ class GoogleScraper:
             ]
             return random.choice(fallback_agents)
     
-    def search_google(self, query, num_results=10, start=0):
+    def _ensure_rate_limit(self):
+        """Ensure we don't exceed rate limits with exponential backoff"""
+        current_time = time.time()
+        
+        # Enforce minimum delay between requests
+        if self.last_request_time > 0:
+            time_since_last = current_time - self.last_request_time
+            min_delay = self.delay_range[0]
+            
+            if time_since_last < min_delay:
+                sleep_time = min_delay - time_since_last
+                logging.info(f"Rate limiting: sleeping for {sleep_time:.2f} seconds")
+                time.sleep(sleep_time)
+        
+        self.last_request_time = time.time()
+        self.request_count += 1
+        
+        # Exponential backoff after many requests
+        if self.request_count > 10:
+            extra_delay = min(30, (self.request_count - 10) * 2)  # Max 30 seconds extra
+            logging.info(f"Exponential backoff: extra {extra_delay} seconds after {self.request_count} requests")
+            time.sleep(extra_delay)
+    
+    def search_google(self, query, num_results=10, start=0, retry_count=0):
         """
-        Search Google for a specific query
+        Search Google for a specific query with retry logic
         
         Args:
             query (str): The Google search query
             num_results (int): Number of results to fetch
             start (int): Starting position for results
+            retry_count (int): Current retry attempt
             
         Returns:
             list: List of dictionaries containing search results
         """
         results = []
+        max_retries = 3
         
         try:
+            # Enforce rate limiting
+            self._ensure_rate_limit()
+            
             # Update user agent for each request
             self.session.headers.update({'User-Agent': self._get_random_user_agent()})
             
@@ -71,25 +101,39 @@ class GoogleScraper:
             search_url = "https://www.google.com/search"
             params = {
                 'q': query,
-                'num': num_results,
+                'num': min(num_results, 10),  # Limit to 10 results max
                 'start': start,
-                'hl': 'en'
+                'hl': 'en',
+                'safe': 'off'
             }
             
+            logging.info(f"Searching: {query} (attempt {retry_count + 1})")
+            
             # Make request
-            response = self.session.get(search_url, params=params, timeout=10)
+            response = self.session.get(search_url, params=params, timeout=15)
+            
+            if response.status_code == 429:  # Too Many Requests
+                if retry_count < max_retries:
+                    backoff_time = (2 ** retry_count) * 10  # 10, 20, 40 seconds
+                    logging.warning(f"Rate limited! Backing off for {backoff_time} seconds...")
+                    time.sleep(backoff_time)
+                    return self.search_google(query, num_results, start, retry_count + 1)
+                else:
+                    logging.error(f"Max retries exceeded for query: {query}")
+                    return results
+            
             response.raise_for_status()
             
             # Parse results
             soup = BeautifulSoup(response.content, 'html.parser')
             
-            # Find search result containers
-            search_results = soup.find_all('div', class_='g')
+            # Find search result containers (multiple selectors for different Google layouts)
+            search_results = soup.find_all('div', class_='g') or soup.find_all('div', class_='tF2Cxc')
             
             for result in search_results:
                 try:
                     # Extract title
-                    title_elem = result.find('h3')
+                    title_elem = result.find('h3') or result.find('h1')
                     title = title_elem.get_text() if title_elem else "No title"
                     
                     # Extract URL
@@ -97,16 +141,16 @@ class GoogleScraper:
                     url = link_elem.get('href') if link_elem else "No URL"
                     
                     # Extract snippet
-                    snippet_elem = result.find('span', class_=['aCOpRe', 'st'])
-                    if not snippet_elem:
-                        snippet_elem = result.find('div', class_=['BNeawe', 's3v9rd'])
+                    snippet_elem = (result.find('span', class_=['aCOpRe', 'st']) or 
+                                  result.find('div', class_=['BNeawe', 's3v9rd']) or
+                                  result.find('span', class_='hgKElc'))
                     snippet = snippet_elem.get_text() if snippet_elem else "No snippet"
                     
-                    if url and url.startswith('http'):
+                    if url and url.startswith('http') and len(url) > 10:
                         results.append({
-                            'title': title,
+                            'title': title.strip(),
                             'url': url,
-                            'snippet': snippet,
+                            'snippet': snippet.strip(),
                             'query': query
                         })
                         
@@ -114,11 +158,21 @@ class GoogleScraper:
                     logging.warning(f"Error parsing search result: {e}")
                     continue
             
-            # Add delay between requests
-            time.sleep(self._get_random_delay())
+            logging.info(f"Found {len(results)} results for: {query}")
+            
+            # Add final delay
+            delay = self._get_random_delay()
+            logging.debug(f"Sleeping for {delay:.2f} seconds before next request")
+            time.sleep(delay)
             
         except requests.RequestException as e:
-            logging.error(f"Request error for query '{query}': {e}")
+            if "429" in str(e) and retry_count < max_retries:
+                backoff_time = (2 ** retry_count) * 15
+                logging.warning(f"Request error (429), retrying in {backoff_time} seconds...")
+                time.sleep(backoff_time)
+                return self.search_google(query, num_results, start, retry_count + 1)
+            else:
+                logging.error(f"Request error for query '{query}': {e}")
         except Exception as e:
             logging.error(f"Unexpected error for query '{query}': {e}")
             

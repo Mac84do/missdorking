@@ -420,8 +420,8 @@ class DorkingApp:
         # Use ProfessionalBulkScanner for better reliability and rate limit handling
         self.professional_scanner = ProfessionalBulkScanner(
             max_workers=max_workers, 
-            delay_range=delay_range,
-            results_per_query=3  # Conservative approach
+            delay_range=delay_range
+            # Professional scanner uses fixed 3 results per query internally for conservative approach
         )
         
         self.is_bulk_running = True
@@ -453,18 +453,23 @@ class DorkingApp:
                 
                 if result.get('success', False):
                     # Get professional scanner result details
-                    summary = result.get('summary', {})
-                    high_value_count = summary.get('high_value_results', 0)
-                    total_results = summary.get('total_results', 0)
+                    summary = result.get('results', {}).get('_summary', {})
+                    stats = result.get('stats', {})
                     
-                    status_msg = f"[{completed}/{total}] ✅ {domain} ({result.get('scan_time', 0):.1f}s) - {high_value_count}/{total_results} high-value results"
+                    login_count = summary.get('login_pages_count', 0)
+                    high_risk_count = summary.get('high_risk_count', 0)
+                    total_results = stats.get('total_results', 0)
+                    
+                    status_msg = f"[{completed}/{total}] ✅ {domain} ({result.get('scan_time', 0):.1f}s) - {login_count} login/{high_risk_count} high-risk"
                     
                     # Add detailed log entry
-                    result_line = f"✅ {domain} - {high_value_count} high-value/{total_results} total ({result.get('scan_time', 0):.1f}s)\n"
+                    result_line = f"✅ {domain} - {login_count} login pages, {high_risk_count} high-risk, {total_results} total ({result.get('scan_time', 0):.1f}s)\n"
                     
-                    # Show some sample findings
-                    if result.get('findings'):
-                        result_line += f"   🎯 Categories found: {', '.join(result['findings'].keys())}\n"
+                    # Show categories found
+                    results_data = result.get('results', {})
+                    found_categories = [cat for cat in results_data.keys() if cat != '_summary' and results_data[cat]]
+                    if found_categories:
+                        result_line += f"   🎯 Categories found: {', '.join(found_categories)}\n"
                     
                 else:
                     error_msg = result.get('error', 'Unknown error')
@@ -476,12 +481,12 @@ class DorkingApp:
                 self.root.after(0, lambda: self.bulk_results_text.see(tk.END))
             
             # Run professional bulk scan with category filtering
-            results = self.professional_scanner.bulk_scan(domains, progress_callback, selected_categories=selected_bulk_categories)
+            results = self.professional_scanner.bulk_scan(domains, selected_categories=selected_bulk_categories, progress_callback=progress_callback)
             
             # Store results in the expected format for GUI
             self.bulk_results = {
                 'summary': results.get('summary', {}),
-                'domains': results.get('domains', {})  # ProfessionalBulkScanner uses 'domains' key
+                'domains': results.get('domain_results', {})  # ProfessionalBulkScanner uses 'domain_results' key
             }
             
             # Display comprehensive summary report

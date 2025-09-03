@@ -293,14 +293,24 @@ class DorkingApp:
         bulk_export_frame = ttk.Frame(bulk_results_frame)
         bulk_export_frame.grid(row=2, column=0, sticky=(tk.W, tk.E))
         
-        self.bulk_export_json_button = ttk.Button(bulk_export_frame, text="💾 Export Results",
-                                                command=self.export_bulk_results, style='Export.TButton')
-        self.bulk_export_json_button.grid(row=0, column=0, padx=(0, 10))
+        self.bulk_export_pdf_button = ttk.Button(bulk_export_frame, text="📄 Export PDF",
+                                                command=self.export_bulk_pdf, style='Export.TButton')
+        self.bulk_export_pdf_button.grid(row=0, column=0, padx=(0, 10))
+        self.bulk_export_pdf_button.config(state='disabled')
+        
+        self.bulk_export_csv_button = ttk.Button(bulk_export_frame, text="📊 Export CSV",
+                                                command=self.export_bulk_csv, style='Export.TButton')
+        self.bulk_export_csv_button.grid(row=0, column=1, padx=(0, 10))
+        self.bulk_export_csv_button.config(state='disabled')
+        
+        self.bulk_export_json_button = ttk.Button(bulk_export_frame, text="💾 Export JSON",
+                                                command=self.export_bulk_json, style='Export.TButton')
+        self.bulk_export_json_button.grid(row=0, column=2, padx=(0, 10))
         self.bulk_export_json_button.config(state='disabled')
         
         self.bulk_clear_button = ttk.Button(bulk_export_frame, text="🗑️ Clear Results",
                                           command=self.clear_bulk_results, style='Export.TButton')
-        self.bulk_clear_button.grid(row=0, column=1, padx=(0, 10))
+        self.bulk_clear_button.grid(row=0, column=3, padx=(0, 10))
     
     def create_category_checkboxes(self):
         """Create checkboxes for each dork category"""
@@ -372,6 +382,8 @@ class DorkingApp:
         
         self.is_bulk_running = True
         self.bulk_scan_button.config(state='disabled', text='🚀 SCANNING...')
+        self.bulk_export_pdf_button.config(state='disabled')
+        self.bulk_export_csv_button.config(state='disabled')
         self.bulk_export_json_button.config(state='disabled')
         
         # Clear results
@@ -428,10 +440,70 @@ class DorkingApp:
         finally:
             self.is_bulk_running = False
             self.root.after(0, lambda: self.bulk_scan_button.config(state='normal', text='🚀 START BULK SCAN'))
+            self.root.after(0, lambda: self.bulk_export_pdf_button.config(state='normal'))
+            self.root.after(0, lambda: self.bulk_export_csv_button.config(state='normal'))
             self.root.after(0, lambda: self.bulk_export_json_button.config(state='normal'))
     
-    def export_bulk_results(self):
-        """Export bulk scan results"""
+    def export_bulk_pdf(self):
+        """Export bulk scan results to PDF"""
+        if not self.bulk_results:
+            messagebox.showwarning("Warning", "No bulk scan results to export!")
+            return
+        
+        try:
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
+                title="Save Bulk Scan PDF Report"
+            )
+            
+            if filename:
+                # Convert bulk results format to single domain format for export compatibility
+                combined_results = self._convert_bulk_to_single_format()
+                
+                filepath = self.exporter.export_to_pdf(combined_results, "bulk_scan", filename)
+                messagebox.showinfo("Success", f"Bulk PDF report saved to:\n{filepath}")
+                
+                if messagebox.askyesno("Open File", "Would you like to open the PDF file?"):
+                    if sys.platform.startswith('win'):
+                        os.startfile(filepath)
+                    else:
+                        webbrowser.open(f'file://{filepath}')
+                        
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export bulk PDF: {e}")
+    
+    def export_bulk_csv(self):
+        """Export bulk scan results to CSV"""
+        if not self.bulk_results:
+            messagebox.showwarning("Warning", "No bulk scan results to export!")
+            return
+        
+        try:
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Save Bulk Scan CSV Report"
+            )
+            
+            if filename:
+                # Convert bulk results format to single domain format for export compatibility
+                combined_results = self._convert_bulk_to_single_format()
+                
+                filepath = self.exporter.export_to_csv(combined_results, "bulk_scan", filename)
+                messagebox.showinfo("Success", f"Bulk CSV report saved to:\n{filepath}")
+                
+                if messagebox.askyesno("Open File", "Would you like to open the CSV file?"):
+                    if sys.platform.startswith('win'):
+                        os.startfile(filepath)
+                    else:
+                        webbrowser.open(f'file://{filepath}')
+                        
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export bulk CSV: {e}")
+    
+    def export_bulk_json(self):
+        """Export bulk scan results to JSON"""
         if not self.bulk_results:
             messagebox.showwarning("Warning", "No bulk scan results to export!")
             return
@@ -440,12 +512,12 @@ class DorkingApp:
             filename = filedialog.asksaveasfilename(
                 defaultextension=".json",
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-                title="Save Bulk Scan Results"
+                title="Save Bulk Scan JSON Results"
             )
             
             if filename:
                 filepath = self.bulk_scanner.save_results(filename)
-                messagebox.showinfo("Success", f"Bulk results saved to:\n{filepath}")
+                messagebox.showinfo("Success", f"Bulk JSON results saved to:\n{filepath}")
                 
                 if messagebox.askyesno("Open Folder", "Would you like to open the folder containing the file?"):
                     folder = os.path.dirname(filepath)
@@ -455,7 +527,43 @@ class DorkingApp:
                         webbrowser.open(f'file://{folder}')
                         
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to export bulk results: {e}")
+            messagebox.showerror("Error", f"Failed to export bulk JSON: {e}")
+    
+    def _convert_bulk_to_single_format(self):
+        """Convert bulk scan results to single domain format for PDF/CSV export"""
+        combined_results = {}
+        
+        # Get domain results from bulk_results
+        domains = self.bulk_results.get('domains', {})
+        
+        for domain, domain_data in domains.items():
+            if domain_data.get('success', False):
+                domain_results = domain_data.get('results', {})
+                
+                # Combine all results across domains
+                for category, queries in domain_results.items():
+                    if category == '_summary':  # Skip summary data
+                        continue
+                        
+                    if category not in combined_results:
+                        combined_results[category] = {}
+                    
+                    for query, results in queries.items():
+                        # Prefix query with domain name for clarity
+                        prefixed_query = f"[{domain}] {query}"
+                        combined_results[category][prefixed_query] = results
+        
+        # Add combined summary
+        summary = self.bulk_results.get('summary', {})
+        combined_results['_summary'] = {
+            'total_domains': summary.get('total_domains', 0),
+            'successful_scans': summary.get('successful_scans', 0),
+            'failed_scans': summary.get('failed_scans', 0),
+            'total_results': sum(len(queries) for queries in combined_results.values() if isinstance(queries, dict)),
+            'scan_type': 'bulk_scan'
+        }
+        
+        return combined_results
     
     def clear_bulk_results(self):
         """Clear bulk scan results"""
@@ -463,6 +571,8 @@ class DorkingApp:
         self.bulk_results = {}
         self.bulk_progress_bar.config(value=0)
         self.bulk_progress_var.set("Ready for bulk domination...")
+        self.bulk_export_pdf_button.config(state='disabled')
+        self.bulk_export_csv_button.config(state='disabled')
         self.bulk_export_json_button.config(state='disabled')
     
     # Single domain scanning methods (same as original)

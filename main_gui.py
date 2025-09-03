@@ -63,16 +63,145 @@ class DorkingApp:
         )
     
     def setup_styles(self):
-        """Configure ttk styles"""
+        """Configure cyberpunk Matrix theme styles"""
         style = ttk.Style()
         
-        # Configure button styles
-        style.configure('Run.TButton', font=('Arial', 10, 'bold'))
-        style.configure('Export.TButton', font=('Arial', 9))
-        style.configure('Bulk.TButton', font=('Arial', 10, 'bold'), foreground='blue')
+        # Set the theme to a dark style
+        try:
+            # Use a dark theme if available
+            style.theme_use('clam')
+        except:
+            pass
         
-        # Configure progress bar style
-        style.configure('Custom.Horizontal.TProgressbar', thickness=20)
+        # Cyberpunk color scheme
+        MATRIX_GREEN = '#00FF41'    # Bright Matrix green
+        DARK_GREEN = '#00AA00'      # Darker green
+        CYBER_BLUE = '#00FFFF'      # Cyan
+        NEON_PINK = '#FF0080'       # Hot pink
+        BLACK_BG = '#000000'        # Pure black
+        DARK_GRAY = '#1a1a1a'       # Dark gray
+        DARKER_GRAY = '#0d0d0d'     # Darker gray
+        
+        # Configure main window background
+        self.root.configure(bg=BLACK_BG)
+        
+        # Configure ttk styles with cyberpunk theme
+        style.configure('TLabel', 
+                       foreground=MATRIX_GREEN, 
+                       background=BLACK_BG,
+                       font=('Consolas', 10, 'bold'))
+        
+        style.configure('Title.TLabel', 
+                       foreground=CYBER_BLUE, 
+                       background=BLACK_BG,
+                       font=('Consolas', 18, 'bold'))
+        
+        style.configure('Header.TLabel', 
+                       foreground=NEON_PINK, 
+                       background=BLACK_BG,
+                       font=('Consolas', 14, 'bold'))
+        
+        style.configure('TFrame', background=BLACK_BG)
+        style.configure('TLabelFrame', 
+                       foreground=MATRIX_GREEN,
+                       background=BLACK_BG,
+                       bordercolor=MATRIX_GREEN,
+                       lightcolor=MATRIX_GREEN,
+                       darkcolor=DARK_GREEN)
+        
+        style.configure('TLabelFrame.Label', 
+                       foreground=MATRIX_GREEN,
+                       background=BLACK_BG,
+                       font=('Consolas', 10, 'bold'))
+        
+        # Entry field styling
+        style.configure('TEntry', 
+                       foreground=MATRIX_GREEN,
+                       fieldbackground=DARKER_GRAY,
+                       bordercolor=MATRIX_GREEN,
+                       insertcolor=MATRIX_GREEN,
+                       font=('Consolas', 10))
+        
+        # Spinbox styling
+        style.configure('TSpinbox', 
+                       foreground=MATRIX_GREEN,
+                       fieldbackground=DARKER_GRAY,
+                       bordercolor=MATRIX_GREEN,
+                       font=('Consolas', 9))
+        
+        # Combobox styling
+        style.configure('TCombobox', 
+                       foreground=MATRIX_GREEN,
+                       fieldbackground=DARKER_GRAY,
+                       bordercolor=MATRIX_GREEN,
+                       font=('Consolas', 9))
+        
+        # Button styles - Matrix theme
+        style.configure('Run.TButton', 
+                       foreground=BLACK_BG,
+                       background=MATRIX_GREEN,
+                       bordercolor=MATRIX_GREEN,
+                       focuscolor='none',
+                       font=('Consolas', 11, 'bold'))
+        
+        style.map('Run.TButton',
+                 background=[('active', DARK_GREEN),
+                           ('pressed', CYBER_BLUE)])
+        
+        style.configure('Export.TButton', 
+                       foreground=BLACK_BG,
+                       background=CYBER_BLUE,
+                       bordercolor=CYBER_BLUE,
+                       focuscolor='none',
+                       font=('Consolas', 9, 'bold'))
+        
+        style.map('Export.TButton',
+                 background=[('active', '#00AAAA'),
+                           ('pressed', MATRIX_GREEN)])
+        
+        style.configure('Bulk.TButton', 
+                       foreground=BLACK_BG,
+                       background=NEON_PINK,
+                       bordercolor=NEON_PINK,
+                       focuscolor='none',
+                       font=('Consolas', 12, 'bold'))
+        
+        style.map('Bulk.TButton',
+                 background=[('active', '#CC0066'),
+                           ('pressed', MATRIX_GREEN)])
+        
+        # Progress bar - Matrix style
+        style.configure('Matrix.Horizontal.TProgressbar', 
+                       background=MATRIX_GREEN,
+                       troughcolor=DARKER_GRAY,
+                       bordercolor=MATRIX_GREEN,
+                       lightcolor=MATRIX_GREEN,
+                       darkcolor=DARK_GREEN,
+                       thickness=25)
+        
+        # Notebook (tabs) styling
+        style.configure('TNotebook', 
+                       background=BLACK_BG,
+                       bordercolor=MATRIX_GREEN)
+        
+        style.configure('TNotebook.Tab', 
+                       foreground=MATRIX_GREEN,
+                       background=DARKER_GRAY,
+                       bordercolor=MATRIX_GREEN,
+                       font=('Consolas', 10, 'bold'))
+        
+        style.map('TNotebook.Tab',
+                 background=[('selected', BLACK_BG),
+                           ('active', DARK_GRAY)],
+                 foreground=[('selected', CYBER_BLUE),
+                           ('active', MATRIX_GREEN)])
+        
+        # Checkbutton styling
+        style.configure('TCheckbutton', 
+                       foreground=MATRIX_GREEN,
+                       background=BLACK_BG,
+                       focuscolor='none',
+                       font=('Consolas', 9))
     
     def create_widgets(self):
         """Create and layout all GUI widgets with tabbed interface"""
@@ -87,9 +216,9 @@ class DorkingApp:
         main_frame.columnconfigure(0, weight=1)
         main_frame.rowconfigure(1, weight=1)
         
-        # Title with playful touch
-        title_label = ttk.Label(main_frame, text="MissDorking™ - Google Dorking Tool 👙💋", 
-                               font=('Arial', 16, 'bold'))
+        # Cyberpunk Matrix title
+        title_label = ttk.Label(main_frame, text="⟨⟨ NEURAL DORKING INTERFACE v2.077 ⟩⟩", 
+                               style='Title.TLabel')
         title_label.grid(row=0, column=0, pady=(0, 20))
         
         # Create notebook for tabs
@@ -102,10 +231,10 @@ class DorkingApp:
         # Create bulk scanning tab
         self.create_bulk_scanning_tab()
         
-        # Status bar
-        self.status_var = tk.StringVar(value=f"Ready - {get_dork_count()} dork queries available")
+        # Status bar - Matrix style
+        self.status_var = tk.StringVar(value=f"» System online - {get_dork_count()} neural queries loaded")
         status_bar = ttk.Label(main_frame, textvariable=self.status_var, 
-                              relief='sunken', font=('Arial', 8))
+                              relief='sunken', font=('Consolas', 9))
         status_bar.grid(row=2, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
     
     def create_single_domain_tab(self):
@@ -165,16 +294,16 @@ class DorkingApp:
         self.create_category_checkboxes()
         
         # Progress section
-        progress_frame = ttk.LabelFrame(single_frame, text="Progress", padding="10")
+        progress_frame = ttk.LabelFrame(single_frame, text="[SCAN STATUS]", padding="10")
         progress_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
         progress_frame.columnconfigure(0, weight=1)
         
-        self.progress_var = tk.StringVar(value="Ready to start...")
+        self.progress_var = tk.StringVar(value="» System ready for infiltration...")
         self.progress_label = ttk.Label(progress_frame, textvariable=self.progress_var)
         self.progress_label.grid(row=0, column=0, sticky=tk.W, pady=2)
         
         self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate',
-                                           style='Custom.Horizontal.TProgressbar')
+                                           style='Matrix.Horizontal.TProgressbar')
         self.progress_bar.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=5)
         
         # Results section
@@ -287,13 +416,13 @@ class DorkingApp:
         bulk_progress_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
         bulk_progress_frame.columnconfigure(0, weight=1)
         
-        self.bulk_progress_var = tk.StringVar(value="Ready for bulk domination...")
+        self.bulk_progress_var = tk.StringVar(value="» Multi-target infiltration mode ready...")
         self.bulk_progress_label = ttk.Label(bulk_progress_frame, textvariable=self.bulk_progress_var,
                                            font=('Arial', 10, 'bold'))
         self.bulk_progress_label.grid(row=0, column=0, sticky=tk.W, pady=2)
         
         self.bulk_progress_bar = ttk.Progressbar(bulk_progress_frame, mode='determinate',
-                                               style='Custom.Horizontal.TProgressbar')
+                                               style='Matrix.Horizontal.TProgressbar')
         self.bulk_progress_bar.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=5)
         
         # Bulk results text area
@@ -961,8 +1090,8 @@ class DorkingApp:
         self.results_text.delete(1.0, tk.END)
         self.results = {}
         self.progress_bar.config(value=0)
-        self.progress_var.set("Ready to start...")
-        self.status_var.set(f"Ready - {get_dork_count()} dork queries available")
+        self.progress_var.set("» System ready for infiltration...")
+        self.status_var.set(f"» System online - {get_dork_count()} neural queries loaded")
         self.export_pdf_button.config(state='disabled')
         self.export_csv_button.config(state='disabled')
 

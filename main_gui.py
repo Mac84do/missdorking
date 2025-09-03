@@ -87,7 +87,7 @@ class DorkingApp:
         main_frame.rowconfigure(1, weight=1)
         
         # Title with playful touch
-        title_label = ttk.Label(main_frame, text="MissDorking™ - Google Dorking Tool 💋", 
+        title_label = ttk.Label(main_frame, text="MissDorking™ - Google Dorking Tool 👙💋", 
                                font=('Arial', 16, 'bold'))
         title_label.grid(row=0, column=0, pady=(0, 20))
         
@@ -264,6 +264,17 @@ class DorkingApp:
         speed_combo.grid(row=0, column=3, padx=(5, 0))
         speed_combo.state(['readonly'])
         
+        # Category selection for bulk scanning
+        bulk_categories_frame = ttk.LabelFrame(input_frame, text="🎯 Categories to Scan", padding="10")
+        bulk_categories_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
+        bulk_categories_frame.columnconfigure(0, weight=1)
+        
+        self.bulk_categories_frame_inner = ttk.Frame(bulk_categories_frame)
+        self.bulk_categories_frame_inner.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        
+        self.bulk_category_vars = {}
+        self.create_bulk_category_checkboxes()
+        
         # Results section
         bulk_results_frame = ttk.LabelFrame(bulk_frame, text="📊 Bulk Scan Results", padding="10")
         bulk_results_frame.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
@@ -330,6 +341,24 @@ class DorkingApp:
                 col = 0
                 row += 1
     
+    def create_bulk_category_checkboxes(self):
+        """Create checkboxes for each dork category for bulk scanning"""
+        row = 0
+        col = 0
+        max_cols = 4
+        
+        for category in GOOGLE_DORKS.keys():
+            var = tk.BooleanVar(value=True)  # All categories selected by default
+            self.bulk_category_vars[category] = var
+            
+            checkbox = ttk.Checkbutton(self.bulk_categories_frame_inner, text=category, variable=var)
+            checkbox.grid(row=row, column=col, sticky=tk.W, padx=(0, 10), pady=2)
+            
+            col += 1
+            if col >= max_cols:
+                col = 0
+                row += 1
+    
     def load_domains_from_file(self):
         """Load domains from file for bulk processing"""
         filepath = filedialog.askopenfilename(
@@ -365,6 +394,12 @@ class DorkingApp:
         domains = [d.strip() for d in domains_text.split('\n') if d.strip()]
         if not domains:
             messagebox.showerror("Error", "No valid domains found!")
+            return
+        
+        # Check if at least one category is selected
+        selected_bulk_categories = [cat for cat, var in self.bulk_category_vars.items() if var.get()]
+        if not selected_bulk_categories:
+            messagebox.showerror("Error", "Please select at least one category to scan!")
             return
         
         # Configure scanner based on settings

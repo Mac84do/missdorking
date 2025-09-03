@@ -35,12 +35,13 @@ class FastBulkScanner:
             format='%(asctime)s - %(levelname)s - %(message)s'
         )
     
-    def scan_single_domain_fast(self, domain):
+    def scan_single_domain_fast(self, domain, selected_categories=None):
         """
         Fast scan of single domain using full Google dorking + direct analysis
         
         Args:
             domain (str): Domain to scan
+            selected_categories (list): List of categories to scan (None for all)
             
         Returns:
             dict: Scan results with timing info

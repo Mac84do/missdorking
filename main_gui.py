@@ -20,6 +20,7 @@ from hybrid_scraper_fixed import HybridScraper
 from export import ResultExporter
 from analysis import ResultAnalyzer
 from fast_bulk_scanner import FastBulkScanner
+from professional_bulk_scanner import ProfessionalBulkScanner
 from splash_screen import show_splash_screen
 
 class DorkingApp:
@@ -214,7 +215,7 @@ class DorkingApp:
         bulk_frame.rowconfigure(2, weight=1)
         
         # Header
-        header_label = ttk.Label(bulk_frame, text="🚀 FAST BULK SCANNER - LUDICROUS SPEED MODE", 
+        header_label = ttk.Label(bulk_frame, text="🎯 PROFESSIONAL BULK SCANNER - RATE-LIMIT SAFE MODE", 
                                font=('Arial', 14, 'bold'), foreground='blue')
         header_label.grid(row=0, column=0, pady=(0, 20))
         
@@ -402,18 +403,26 @@ class DorkingApp:
             messagebox.showerror("Error", "Please select at least one category to scan!")
             return
         
-        # Configure scanner based on settings
+        # Configure professional scanner based on settings
         workers = int(self.bulk_workers_var.get())
         speed = self.bulk_speed_var.get()
         
         if speed == "Conservative":
-            delay_range = (2.0, 4.0)
+            delay_range = (8.0, 12.0)
+            max_workers = min(workers, 2)  # Very conservative
         elif speed == "Fast":
-            delay_range = (0.5, 1.0)
+            delay_range = (5.0, 8.0)
+            max_workers = min(workers, 3)  # Moderate
         else:  # Ludicrous
-            delay_range = (0.1, 0.3)
+            delay_range = (3.0, 5.0)
+            max_workers = min(workers, 4)  # Still reasonable to avoid blocks
         
-        self.bulk_scanner = FastBulkScanner(max_workers=workers, delay_range=delay_range)
+        # Use ProfessionalBulkScanner for better reliability and rate limit handling
+        self.professional_scanner = ProfessionalBulkScanner(
+            max_workers=max_workers, 
+            delay_range=delay_range,
+            results_per_query=3  # Conservative approach
+        )
         
         self.is_bulk_running = True
         self.bulk_scan_button.config(state='disabled', text='🚀 SCANNING...')
@@ -431,48 +440,88 @@ class DorkingApp:
         thread.start()
     
     def run_bulk_scan(self, domains):
-        """Run bulk scanning process"""
+        """Run bulk scanning process using ProfessionalBulkScanner"""
         try:
-            self.root.after(0, lambda: self.bulk_progress_var.set(f"🚀 Starting bulk scan of {len(domains)} domains..."))
+            self.root.after(0, lambda: self.bulk_progress_var.set(f"🚀 Starting professional bulk scan of {len(domains)} domains..."))
+            
+            # Get selected categories for filtering
+            selected_bulk_categories = [cat for cat, var in self.bulk_category_vars.items() if var.get()]
             
             def progress_callback(completed, total, domain, result):
-                """Progress callback for bulk scanner"""
+                """Enhanced progress callback for professional scanner"""
                 self.root.after(0, lambda: self.bulk_progress_bar.config(value=completed))
                 
-                status = "✅ SUCCESS" if result['success'] else "❌ FAILED"
-                summary = result['results']['_summary']
-                login_count = summary.get('login_pages_count', 0)
+                if result.get('success', False):
+                    # Get professional scanner result details
+                    summary = result.get('summary', {})
+                    high_value_count = summary.get('high_value_results', 0)
+                    total_results = summary.get('total_results', 0)
+                    
+                    status_msg = f"[{completed}/{total}] ✅ {domain} ({result.get('scan_time', 0):.1f}s) - {high_value_count}/{total_results} high-value results"
+                    
+                    # Add detailed log entry
+                    result_line = f"✅ {domain} - {high_value_count} high-value/{total_results} total ({result.get('scan_time', 0):.1f}s)\n"
+                    
+                    # Show some sample findings
+                    if result.get('findings'):
+                        result_line += f"   🎯 Categories found: {', '.join(result['findings'].keys())}\n"
+                    
+                else:
+                    error_msg = result.get('error', 'Unknown error')
+                    status_msg = f"[{completed}/{total}] ❌ {domain} - {error_msg}"
+                    result_line = f"❌ {domain} - FAILED: {error_msg}\n"
                 
-                status_msg = f"[{completed}/{total}] {status} {domain} ({result['scan_time']}s) - {login_count} login pages"
                 self.root.after(0, lambda: self.bulk_progress_var.set(status_msg))
-                
-                # Add to results display
-                result_line = f"{status} {domain} - {login_count} login pages ({result['scan_time']}s)\n"
                 self.root.after(0, lambda: self.bulk_results_text.insert(tk.END, result_line))
                 self.root.after(0, lambda: self.bulk_results_text.see(tk.END))
             
-            # Run bulk scan
-            results = self.bulk_scanner.bulk_scan(domains, progress_callback)
+            # Run professional bulk scan with category filtering
+            results = self.professional_scanner.bulk_scan(domains, progress_callback, selected_categories=selected_bulk_categories)
+            
             # Store results in the expected format for GUI
             self.bulk_results = {
-                'summary': results['summary'],
-                'domains': results['domain_results']  # FastBulkScanner uses 'domain_results' key
+                'summary': results.get('summary', {}),
+                'domains': results.get('domains', {})  # ProfessionalBulkScanner uses 'domains' key
             }
             
-            # Display summary report
-            report = self.bulk_scanner.generate_quick_report()
-            self.root.after(0, lambda: self.bulk_results_text.insert(tk.END, f"\n{report}"))
+            # Display comprehensive summary report
+            self.root.after(0, lambda: self.bulk_results_text.insert(tk.END, "\n" + "="*80 + "\n"))
+            self.root.after(0, lambda: self.bulk_results_text.insert(tk.END, "📊 PROFESSIONAL BULK SCAN SUMMARY REPORT\n"))
+            self.root.after(0, lambda: self.bulk_results_text.insert(tk.END, "="*80 + "\n"))
+            
+            summary = results.get('summary', {})
+            report_lines = [
+                f"📋 Total Domains Scanned: {summary.get('total_domains', 0)}",
+                f"✅ Successful Scans: {summary.get('successful_scans', 0)}",
+                f"❌ Failed Scans: {summary.get('failed_scans', 0)}",
+                f"⏱️  Total Scan Time: {summary.get('total_time', 0):.2f} seconds",
+                f"🎯 High-Value Results: {summary.get('high_value_results', 0)}",
+                f"📊 Total Results Found: {summary.get('total_results', 0)}",
+                f"📈 Success Rate: {summary.get('success_rate', 0):.1f}%",
+                f"🚫 Rate Limit Incidents: {summary.get('rate_limit_hits', 0)}"
+            ]
+            
+            for line in report_lines:
+                self.root.after(0, lambda l=line: self.bulk_results_text.insert(tk.END, f"{l}\n"))
+            
+            # Show category breakdown if available
+            if 'category_breakdown' in summary:
+                self.root.after(0, lambda: self.bulk_results_text.insert(tk.END, "\n🎯 CATEGORY BREAKDOWN:\n"))
+                for category, count in summary['category_breakdown'].items():
+                    self.root.after(0, lambda c=category, cnt=count: 
+                                   self.bulk_results_text.insert(tk.END, f"   • {c}: {cnt} results\n"))
+            
+            self.root.after(0, lambda: self.bulk_results_text.insert(tk.END, "\n💎 Professional scan completed with enhanced accuracy and rate limit protection!\n"))
             self.root.after(0, lambda: self.bulk_results_text.see(tk.END))
             
-            # Update status
-            summary = results['summary']
-            final_status = f"🎉 BULK SCAN COMPLETE! {summary['successful_scans']}/{summary['total_domains']} domains scanned successfully"
+            # Update final status
+            final_status = f"🎉 PROFESSIONAL SCAN COMPLETE! {summary.get('successful_scans', 0)}/{summary.get('total_domains', 0)} domains - {summary.get('high_value_results', 0)} high-value results found!"
             self.root.after(0, lambda: self.bulk_progress_var.set(final_status))
             
-            logging.info(f"Bulk scan completed: {summary}")
+            logging.info(f"Professional bulk scan completed: {summary}")
             
         except Exception as e:
-            error_msg = f"Bulk scan failed: {str(e)}"
+            error_msg = f"Professional bulk scan failed: {str(e)}"
             self.root.after(0, lambda: messagebox.showerror("Error", error_msg))
             logging.error(error_msg)
         
@@ -555,7 +604,12 @@ class DorkingApp:
             )
             
             if filename:
-                filepath = self.bulk_scanner.save_results(filename)
+                # Use professional scanner if available, otherwise fallback to bulk scanner
+                if hasattr(self, 'professional_scanner') and self.professional_scanner:
+                    filepath = self.professional_scanner.save_results(filename)
+                else:
+                    filepath = self.bulk_scanner.save_results(filename)
+                    
                 messagebox.showinfo("Success", f"Bulk JSON results saved to:\n{filepath}")
                 
                 if messagebox.askyesno("Open Folder", "Would you like to open the folder containing the file?"):

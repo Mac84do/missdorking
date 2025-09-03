@@ -81,12 +81,17 @@ class ResultExporter:
                 for query, search_results in queries.items():
                     if search_results:
                         for result in search_results:
+                            # Safely convert all values to strings
+                            title_val = result.get('title', 'N/A')
+                            url_val = result.get('url', 'N/A')
+                            snippet_val = result.get('snippet', 'N/A')
+                            
                             writer.writerow({
-                                'Category': category,
-                                'Query': query,
-                                'Title': result.get('title', 'N/A'),
-                                'URL': result.get('url', 'N/A'),
-                                'Snippet': result.get('snippet', 'N/A'),
+                                'Category': str(category) if category is not None else 'N/A',
+                                'Query': str(query) if query is not None else 'N/A',
+                                'Title': str(title_val) if title_val is not None else 'N/A',
+                                'URL': str(url_val) if url_val is not None else 'N/A',
+                                'Snippet': str(snippet_val) if snippet_val is not None else 'N/A',
                                 'Timestamp': timestamp
                             })
                     else:
@@ -138,11 +143,17 @@ class ResultExporter:
         story.append(Spacer(1, 20))
         
         # Add summary
-        total_queries = sum(len(queries) for queries in results.values())
-        total_results = sum(
-            sum(len(search_results) for search_results in queries.values()) 
-            for queries in results.values()
-        )
+        try:
+            total_queries = sum(len(queries) for queries in results.values() if isinstance(queries, dict))
+            total_results = sum(
+                sum(len(search_results) if hasattr(search_results, '__len__') else 0 
+                    for search_results in queries.values()) 
+                for queries in results.values() if isinstance(queries, dict)
+            )
+        except Exception as e:
+            # Fallback if summary calculation fails
+            total_queries = 0
+            total_results = 0
         
         summary_text = f"""
         <b>Summary:</b><br/>
@@ -170,8 +181,15 @@ class ResultExporter:
                     # Results table
                     table_data = [['Title', 'URL']]
                     for result in search_results[:10]:  # Limit to first 10 results per query
-                        title = result.get('title', 'N/A')[:80] + ('...' if len(result.get('title', '')) > 80 else '')
-                        url = result.get('url', 'N/A')[:60] + ('...' if len(result.get('url', '')) > 60 else '')
+                        # Ensure title and url are strings and handle truncation safely
+                        title_raw = result.get('title', 'N/A')
+                        title_str = str(title_raw) if title_raw is not None else 'N/A'
+                        title = title_str[:80] + ('...' if len(title_str) > 80 else '')
+                        
+                        url_raw = result.get('url', 'N/A')
+                        url_str = str(url_raw) if url_raw is not None else 'N/A'
+                        url = url_str[:60] + ('...' if len(url_str) > 60 else '')
+                        
                         table_data.append([title, url])
                     
                     if table_data[1:]:  # If there are results

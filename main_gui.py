@@ -418,7 +418,11 @@ class DorkingApp:
             
             # Run bulk scan
             results = self.bulk_scanner.bulk_scan(domains, progress_callback)
-            self.bulk_results = results
+            # Store results in the expected format for GUI
+            self.bulk_results = {
+                'summary': results['summary'],
+                'domains': results['domain_results']  # FastBulkScanner uses 'domain_results' key
+            }
             
             # Display summary report
             report = self.bulk_scanner.generate_quick_report()
@@ -549,9 +553,11 @@ class DorkingApp:
                         combined_results[category] = {}
                     
                     for query, results in queries.items():
-                        # Prefix query with domain name for clarity
-                        prefixed_query = f"[{domain}] {query}"
-                        combined_results[category][prefixed_query] = results
+                        # Ensure results is iterable (list/dict) and not None or integer
+                        if results is not None and hasattr(results, '__iter__') and not isinstance(results, str):
+                            # Prefix query with domain name for clarity
+                            prefixed_query = f"[{domain}] {query}"
+                            combined_results[category][prefixed_query] = results
         
         # Add combined summary
         summary = self.bulk_results.get('summary', {})

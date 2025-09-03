@@ -37,7 +37,7 @@ class FastBulkScanner:
     
     def scan_single_domain_fast(self, domain):
         """
-        Fast scan of single domain using only direct analysis
+        Fast scan of single domain using full Google dorking + direct analysis
         
         Args:
             domain (str): Domain to scan
@@ -51,45 +51,44 @@ class FastBulkScanner:
         logging.info(f"[{thread_id}] Starting fast scan of {domain}")
         
         try:
-            # Use hybrid scraper with LUDICROUS SPEED delays 🚀
-            scraper = HybridScraper(delay_range=self.delay_range)
+            # Import required modules for full dorking
+            from google_dorks import get_all_dorks_for_domain
+            from scraper import GoogleScraper
             
-            # Only do direct analysis - skip Google completely
-            direct_results = scraper.analyze_domain_directly(domain)
+            # Use Google scraper with fast delays
+            scraper = GoogleScraper(delay_range=self.delay_range)
             
-            # Analyze results
+            # Get all dork queries for domain
+            all_dorks = get_all_dorks_for_domain(domain)
+            
+            # Run Google dorking for all categories
+            results = {}
+            total_results_count = 0
+            
+            for category, dorks in all_dorks.items():
+                category_results = {}
+                
+                for dork in dorks[:3]:  # Limit to first 3 dorks per category for speed
+                    search_results = scraper.search_google(dork, 5)  # Limit to 5 results per query for speed
+                    category_results[dork] = search_results
+                    total_results_count += len(search_results)
+                
+                results[category] = category_results
+            
+            # Add direct analysis as well
+            hybrid_scraper = HybridScraper(delay_range=self.delay_range)
+            direct_results = hybrid_scraper.analyze_domain_directly(domain)
+            
             if direct_results:
-                analyzed_results = {}
-                login_pages = []
+                if "Login & Admin Pages" not in results:
+                    results["Login & Admin Pages"] = {}
                 
-                for result in direct_results:
-                    analyzed_result = self.analyzer.analyze_result(result.copy())
-                    analysis = analyzed_result['analysis']
-                    
-                    if 'login_page' in analysis['categories']:
-                        login_pages.append(analyzed_result)
-                
-                analyzed_results = {
-                    'Login & Admin Pages': {
-                        f'Direct analysis of {domain}': direct_results
-                    }
-                }
-                
-                analyzed_results['_summary'] = {
-                    'total_unique_results': len(direct_results),
-                    'login_pages_count': len(login_pages),
-                    'high_risk_count': len([r for r in login_pages if r['analysis']['risk_level'] == 'high']),
-                    'login_pages': login_pages
-                }
-            else:
-                analyzed_results = {
-                    '_summary': {
-                        'total_unique_results': 0,
-                        'login_pages_count': 0,
-                        'high_risk_count': 0,
-                        'login_pages': []
-                    }
-                }
+                direct_query = f"Direct site analysis of {domain}"
+                results["Login & Admin Pages"][direct_query] = direct_results
+                total_results_count += len(direct_results)
+            
+            # Perform analysis
+            analyzed_results = self.analyzer.categorize_results(results)
             
             scan_time = time.time() - start_time
             
@@ -102,7 +101,11 @@ class FastBulkScanner:
                 'timestamp': datetime.now().isoformat()
             }
             
-            logging.info(f"[{thread_id}] ✅ {domain} completed in {scan_time:.2f}s - {len(direct_results)} results")
+            summary = analyzed_results.get('_summary', {})
+            login_count = summary.get('login_pages_count', 0)
+            high_risk = summary.get('high_risk_count', 0)
+            
+            logging.info(f"[{thread_id}] ✅ {domain} completed in {scan_time:.2f}s - {total_results_count} results ({login_count} login pages, {high_risk} high-risk)")
             return result
             
         except Exception as e:

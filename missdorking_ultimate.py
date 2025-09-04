@@ -97,6 +97,9 @@ class MissDorkingUltimate:
         main_frame.columnconfigure(0, weight=1)
         main_frame.rowconfigure(2, weight=1)
         
+        # Set up window close protocol
+        self.root.protocol("WM_DELETE_WINDOW", self.safe_exit)
+        
         # Create futuristic banner
         self.create_ultimate_banner(main_frame)
         
@@ -226,6 +229,15 @@ class MissDorkingUltimate:
             style='QuickAccess.TButton'
         )
         about_btn.pack(side=tk.LEFT, padx=5)
+        
+        # Exit button
+        exit_btn = ttk.Button(
+            buttons_frame,
+            text="🚪 Exit Application",
+            command=self.safe_exit,
+            style='Exit.TButton'
+        )
+        exit_btn.pack(side=tk.RIGHT, padx=5)
     
     def create_enhanced_tabs(self, parent):
         """Create enhanced tabbed interface"""
@@ -625,6 +637,13 @@ class MissDorkingUltimate:
                        foreground='orange', 
                        background=BLACK_BG,
                        font=('Segoe UI', 12))
+        
+        # Exit button style
+        style.configure('Exit.TButton', 
+                       foreground='white',
+                       background='#FF4444',
+                       font=('Segoe UI', 9, 'bold'),
+                       relief='flat')
     
     # Enhanced functionality methods
     
@@ -1032,6 +1051,48 @@ Total Queries: {total_queries}
             # Show a dad joke to cheer up
             joke = self.dad_jokes.get_random_joke()
             self.root.after(2000, lambda: self.progress_var.set(f"😂 {joke}"))
+    
+    def safe_exit(self):
+        """Safely exit the application with confirmation"""
+        # Check if any scans are running
+        if self.is_running or self.is_bulk_running:
+            result = messagebox.askyesnocancel(
+                "Exit MissDorking Ultimate", 
+                "🚨 Active scan in progress!\n\nExiting now will stop the current scan.\nAre you sure you want to quit?",
+                icon='warning'
+            )
+            if not result:
+                return  # User chose No or Cancel
+        else:
+            # Show exit confirmation with dad joke
+            exit_joke = self.dad_jokes.get_random_joke()
+            result = messagebox.askyesno(
+                "Exit MissDorking Ultimate", 
+                f"👋 Thanks for using MissDorking Ultimate!\n\n😂 One last dad joke for the road:\n{exit_joke}\n\nReady to close the application?",
+                icon='question'
+            )
+            if not result:
+                return  # User chose No
+        
+        # Cleanup and exit
+        try:
+            # Cancel any pending joke timer
+            if hasattr(self, 'joke_timer_id') and self.joke_timer_id:
+                self.root.after_cancel(self.joke_timer_id)
+            
+            # Log exit
+            logging.info("MissDorking Ultimate shutting down gracefully 👋")
+            
+            # Update status
+            if hasattr(self, 'progress_var'):
+                self.progress_var.set("🎯 Shutting down... Thanks for using MissDorking Ultimate!")
+            
+            # Small delay to show shutdown message
+            self.root.after(500, self.root.quit)
+            
+        except Exception as e:
+            logging.error(f"Error during shutdown: {e}")
+            self.root.quit()
     
     def show_about_dialog(self):
         """Show about dialog with dad joke"""

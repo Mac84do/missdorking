@@ -159,8 +159,852 @@ class MissDorkingUltimate:
     def create_title_section(self, parent):
         """Create title section with dynamic content"""
         title_frame = ttk.Frame(parent, padding="20")
-        title_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))\
+        title_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))
         title_frame.columnconfigure(0, weight=1)
         
         # Main title
-        main_title = ttk.Label(\n            title_frame,\n            text="🚀 MISSDORKING™ ULTIMATE 🚀",\n            style='Ultimate.TLabel'\n        )\n        main_title.grid(row=0, column=0)\n        \n        # Subtitle with company branding if available\n        company_info = self.branding_manager.get_company_info() if self.branding_manager else None\n        if company_info and company_info.get('name') != 'Your Company Name':\n            subtitle_text = f\"Professional Intelligence Platform - Powered by {company_info['name']}\"\n        else:\n            subtitle_text = \"The Ultimate Google Dorking & Cybersecurity Intelligence Suite\"\n            \n        subtitle = ttk.Label(\n            title_frame,\n            text=subtitle_text,\n            style='Subtitle.TLabel'\n        )\n        subtitle.grid(row=1, column=0, pady=(5, 0))\n        \n        # Dynamic joke display\n        self.joke_label = ttk.Label(\n            title_frame,\n            text=self.dad_jokes.get_smart_joke(),\n            style='Joke.TLabel'\n        )\n        self.joke_label.grid(row=2, column=0, pady=(10, 0))\n        \n        # Quick access buttons\n        self.create_quick_access_buttons(title_frame)\n    \n    def create_quick_access_buttons(self, parent):\n        \"\"\"Create quick access buttons for common actions\"\"\"\n        buttons_frame = ttk.Frame(parent)\n        buttons_frame.grid(row=3, column=0, pady=(15, 0))\n        \n        # Branding config button\n        branding_btn = ttk.Button(\n            buttons_frame,\n            text=\"🎨 Company Branding\",\n            command=self.open_branding_config,\n            style='QuickAccess.TButton'\n        )\n        branding_btn.pack(side=tk.LEFT, padx=5)\n        \n        # New joke button\n        joke_btn = ttk.Button(\n            buttons_frame,\n            text=\"😂 New Dad Joke\",\n            command=self.show_random_joke,\n            style='QuickAccess.TButton'\n        )\n        joke_btn.pack(side=tk.LEFT, padx=5)\n        \n        # About button\n        about_btn = ttk.Button(\n            buttons_frame,\n            text=\"ℹ️ About Ultimate\",\n            command=self.show_about_dialog,\n            style='QuickAccess.TButton'\n        )\n        about_btn.pack(side=tk.LEFT, padx=5)\n    \n    def create_enhanced_tabs(self, parent):\n        \"\"\"Create enhanced tabbed interface\"\"\"\n        self.notebook = ttk.Notebook(parent)\n        self.notebook.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=20, pady=(0, 20))\n        \n        # Enhanced single domain tab\n        self.create_enhanced_single_tab()\n        \n        # Enhanced bulk scanning tab\n        self.create_enhanced_bulk_tab()\n        \n        # New customer management tab\n        self.create_customer_tab()\n        \n        # Export hub tab\n        self.create_export_hub_tab()\n    \n    def create_enhanced_single_tab(self):\n        \"\"\"Enhanced single domain scanning tab\"\"\"\n        single_frame = ttk.Frame(self.notebook, padding=\"15\")\n        self.notebook.add(single_frame, text=\"🎯 Single Domain Intel\")\n        \n        single_frame.columnconfigure(1, weight=1)\n        single_frame.rowconfigure(5, weight=1)\n        \n        # Enhanced input section\n        input_frame = ttk.LabelFrame(single_frame, text=\"🎯 TARGET ACQUISITION\", padding=\"15\")\n        input_frame.grid(row=0, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 15))\n        input_frame.columnconfigure(1, weight=1)\n        \n        ttk.Label(input_frame, text=\"Domain Target:\", style='Header.TLabel').grid(\n            row=0, column=0, sticky=tk.W, padx=(0, 10))\n        \n        self.domain_var = tk.StringVar()\n        self.domain_entry = ttk.Entry(input_frame, textvariable=self.domain_var, \n                                     font=('Segoe UI', 12), width=40)\n        self.domain_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 10))\n        self.domain_entry.bind('<Return>', self.on_enter_pressed)\n        \n        self.scan_button = ttk.Button(input_frame, text=\"🚀 LAUNCH SCAN\", \n                                    command=self.start_enhanced_scan, style='Launch.TButton')\n        self.scan_button.grid(row=0, column=2)\n        \n        # Enhanced options\n        self.create_enhanced_options(single_frame)\n        \n        # Progress section with jokes\n        self.create_progress_section(single_frame)\n        \n        # Enhanced results section\n        self.create_enhanced_results(single_frame)\n    \n    def create_enhanced_options(self, parent):\n        \"\"\"Create enhanced options section\"\"\"\n        options_frame = ttk.LabelFrame(parent, text=\"⚙️ SCAN CONFIGURATION\", padding=\"15\")\n        options_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 15))\n        options_frame.columnconfigure(1, weight=1)\n        \n        # Results per query\n        ttk.Label(options_frame, text=\"Results per query:\").grid(row=0, column=0, sticky=tk.W, pady=5)\n        self.results_per_query_var = tk.StringVar(value=\"10\")\n        results_spinbox = ttk.Spinbox(options_frame, from_=1, to=50, width=10,\n                                     textvariable=self.results_per_query_var)\n        results_spinbox.grid(row=0, column=1, sticky=tk.W, padx=(10, 0), pady=5)\n        \n        # Delay settings\n        ttk.Label(options_frame, text=\"Scan speed:\").grid(row=0, column=2, sticky=tk.W, padx=(20, 0), pady=5)\n        self.speed_var = tk.StringVar(value=\"Balanced\")\n        speed_combo = ttk.Combobox(options_frame, textvariable=self.speed_var,\n                                  values=[\"Conservative\", \"Balanced\", \"Aggressive\", \"Ludicrous\"], \n                                  width=12, state='readonly')\n        speed_combo.grid(row=0, column=3, sticky=tk.W, padx=(10, 0), pady=5)\n        \n        # Category selection with enhanced display\n        self.create_enhanced_categories(options_frame)\n    \n    def create_enhanced_categories(self, parent):\n        \"\"\"Enhanced category selection\"\"\"\n        cat_frame = ttk.LabelFrame(parent, text=\"🎯 Intelligence Categories\", padding=\"10\")\n        cat_frame.grid(row=1, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=(10, 0))\n        cat_frame.columnconfigure(0, weight=1)\n        \n        # Select all / none buttons\n        button_frame = ttk.Frame(cat_frame)\n        button_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=(0, 10))\n        \n        ttk.Button(button_frame, text=\"✅ Select All\", \n                  command=self.select_all_categories, style='Utility.TButton').pack(side=tk.LEFT, padx=(0, 5))\n        ttk.Button(button_frame, text=\"❌ Clear All\", \n                  command=self.clear_all_categories, style='Utility.TButton').pack(side=tk.LEFT, padx=(0, 5))\n        \n        # Categories with counts\n        categories_frame = ttk.Frame(cat_frame)\n        categories_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))\n        \n        self.category_vars = {}\n        row, col = 0, 0\n        for category in GOOGLE_DORKS.keys():\n            var = tk.BooleanVar(value=True)\n            self.category_vars[category] = var\n            \n            dork_count = len(GOOGLE_DORKS[category])\n            text = f\"{category} ({dork_count})\"\n            \n            checkbox = ttk.Checkbutton(categories_frame, text=text, variable=var)\n            checkbox.grid(row=row, column=col, sticky=tk.W, padx=(0, 20), pady=2)\n            \n            col += 1\n            if col >= 3:\n                col = 0\n                row += 1\n    \n    def create_progress_section(self, parent):\n        \"\"\"Enhanced progress section with dad jokes\"\"\"\n        progress_frame = ttk.LabelFrame(parent, text=\"📊 SCAN STATUS\", padding=\"15\")\n        progress_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 15))\n        progress_frame.columnconfigure(0, weight=1)\n        \n        self.progress_var = tk.StringVar(value=\"🎯 Ready to unleash digital reconnaissance...\")\n        self.progress_label = ttk.Label(progress_frame, textvariable=self.progress_var, \n                                       style='Progress.TLabel')\n        self.progress_label.grid(row=0, column=0, sticky=tk.W, pady=(0, 5))\n        \n        self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate',\n                                           style='Modern.Horizontal.TProgressbar')\n        self.progress_bar.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(0, 5))\n        \n        # Live stats\n        self.stats_label = ttk.Label(progress_frame, text=\"\", \n                                    style='Stats.TLabel')\n        self.stats_label.grid(row=2, column=0, sticky=tk.W)\n    \n    def create_enhanced_results(self, parent):\n        \"\"\"Enhanced results section\"\"\"\n        results_frame = ttk.LabelFrame(parent, text=\"🎯 INTELLIGENCE RESULTS\", padding=\"15\")\n        results_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 15))\n        results_frame.columnconfigure(0, weight=1)\n        results_frame.rowconfigure(0, weight=1)\n        \n        # Results display with enhanced formatting\n        self.results_text = scrolledtext.ScrolledText(\n            results_frame, \n            height=20, \n            width=100,\n            font=('Consolas', 9),\n            bg='#1a1a1a',\n            fg='#00FF88',\n            insertbackground='#00CCFF',\n            selectbackground='#FF1493'\n        )\n        self.results_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 15))\n        \n        # Enhanced export options\n        self.create_enhanced_export_buttons(results_frame)\n    \n    def create_enhanced_export_buttons(self, parent):\n        \"\"\"Enhanced export buttons with customer selection\"\"\"\n        export_frame = ttk.Frame(parent)\n        export_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))\n        \n        # Customer selection for exports\n        ttk.Label(export_frame, text=\"Customer:\").pack(side=tk.LEFT, padx=(0, 5))\n        \n        self.customer_var = tk.StringVar()\n        customer_combo = ttk.Combobox(export_frame, textvariable=self.customer_var, \n                                     width=20, state='readonly')\n        customer_combo.pack(side=tk.LEFT, padx=(0, 15))\n        self.customer_combo = customer_combo\n        self.update_customer_list()\n        \n        # Export buttons\n        self.pdf_button = ttk.Button(export_frame, text=\"📄 Export Professional PDF\",\n                                   command=self.export_enhanced_pdf, style='Export.TButton')\n        self.pdf_button.pack(side=tk.LEFT, padx=(0, 10))\n        \n        self.csv_button = ttk.Button(export_frame, text=\"📊 Export CSV Data\",\n                                   command=self.export_enhanced_csv, style='Export.TButton')\n        self.csv_button.pack(side=tk.LEFT, padx=(0, 10))\n        \n        self.clear_button = ttk.Button(export_frame, text=\"🗑️ Clear Results\",\n                                     command=self.clear_results, style='Utility.TButton')\n        self.clear_button.pack(side=tk.RIGHT)\n        \n        # Initially disable export buttons\n        self.pdf_button.config(state='disabled')\n        self.csv_button.config(state='disabled')\n    \n    def create_enhanced_bulk_tab(self):\n        \"\"\"Enhanced bulk scanning tab\"\"\"\n        bulk_frame = ttk.Frame(self.notebook, padding=\"15\")\n        self.notebook.add(bulk_frame, text=\"🚀 Mass Intelligence\")\n        \n        # This would be similar to single tab but enhanced for bulk operations\n        # For brevity, I'll add a placeholder that shows the concept\n        \n        ttk.Label(bulk_frame, text=\"🚀 MASS INTELLIGENCE OPERATIONS\", \n                 style='Ultimate.TLabel').pack(pady=20)\n        \n        ttk.Label(bulk_frame, \n                 text=\"Enhanced bulk scanning with professional reporting\\nand customer management integration!\", \n                 style='Subtitle.TLabel').pack(pady=10)\n        \n        ttk.Label(bulk_frame, \n                 text=\"🚧 Advanced bulk features coming in the next version! 🚧\",\n                 style='Info.TLabel').pack(pady=30)\n    \n    def create_customer_tab(self):\n        \"\"\"Customer management tab\"\"\"\n        customer_frame = ttk.Frame(self.notebook, padding=\"15\")\n        self.notebook.add(customer_frame, text=\"👥 Customer Hub\")\n        \n        ttk.Label(customer_frame, text=\"👥 CUSTOMER MANAGEMENT HUB\", \n                 style='Ultimate.TLabel').pack(pady=20)\n        \n        # Quick customer management\n        mgmt_frame = ttk.LabelFrame(customer_frame, text=\"Customer Management\", padding=\"15\")\n        mgmt_frame.pack(fill=tk.X, pady=20)\n        \n        ttk.Button(mgmt_frame, text=\"➕ Add New Customer\", \n                  command=self.add_customer_quick, style='Action.TButton').pack(side=tk.LEFT, padx=5)\n        \n        ttk.Button(mgmt_frame, text=\"🎨 Open Branding Studio\", \n                  command=self.open_branding_config, style='Secondary.TButton').pack(side=tk.LEFT, padx=5)\n        \n        # Customer list\n        list_frame = ttk.LabelFrame(customer_frame, text=\"Current Customers\", padding=\"15\")\n        list_frame.pack(fill=tk.BOTH, expand=True, pady=20)\n        \n        self.customer_listbox = tk.Listbox(list_frame, height=15, \n                                          bg='#2a2a2a', fg='#00CCFF', \n                                          selectbackground='#FF1493')\n        self.customer_listbox.pack(fill=tk.BOTH, expand=True)\n        \n        self.refresh_customer_display()\n    \n    def create_export_hub_tab(self):\n        \"\"\"Export hub tab\"\"\"\n        export_frame = ttk.Frame(self.notebook, padding=\"15\")\n        self.notebook.add(export_frame, text=\"📄 Export Hub\")\n        \n        ttk.Label(export_frame, text=\"📄 PROFESSIONAL EXPORT HUB\", \n                 style='Ultimate.TLabel').pack(pady=20)\n        \n        # Export templates and options would go here\n        ttk.Label(export_frame, \n                 text=\"Professional PDF and CSV export with company branding,\\ncustomer information, and dad jokes!\",\n                 style='Subtitle.TLabel').pack(pady=10)\n        \n        # Export history\n        ttk.Label(export_frame, text=\"📋 Recent Exports\", \n                 style='Header.TLabel').pack(anchor=tk.W, pady=(30, 10))\n        \n        export_list = tk.Listbox(export_frame, height=10, \n                                bg='#2a2a2a', fg='#00CCFF')\n        export_list.pack(fill=tk.BOTH, expand=True, pady=10)\n    \n    def create_ultimate_status_bar(self, parent):\n        \"\"\"Ultimate status bar with jokes and stats\"\"\"\n        status_frame = ttk.Frame(parent, style='Status.TFrame', padding=\"15\")\n        status_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), padx=20, pady=(0, 20))\n        status_frame.columnconfigure(0, weight=1)\n        \n        self.status_var = tk.StringVar(value=f\"🎯 System Online • {get_dork_count()} Neural Queries Loaded • Ready for Digital Domination\")\n        status_label = ttk.Label(status_frame, textvariable=self.status_var, style='Status.TLabel')\n        status_label.grid(row=0, column=0, sticky=tk.W)\n        \n        # Version info\n        version_label = ttk.Label(status_frame, text=\"v2.0 ULTIMATE 🚀\", style='Version.TLabel')\n        version_label.grid(row=0, column=1, sticky=tk.E)\n    \n    def setup_ultimate_styles(self):\n        \"\"\"Setup ultimate futuristic styles\"\"\"\n        style = ttk.Style()\n        \n        try:\n            style.theme_use('clam')\n        except:\n            pass\n        \n        # Ultimate color scheme\n        NEON_CYAN = '#00FFFF'\n        HOT_PINK = '#FF1493'\n        CYBER_GREEN = '#00FF88'\n        ELECTRIC_BLUE = '#00CCFF'\n        DEEP_PURPLE = '#8A2BE2'\n        LIGHT_GRAY = '#E0E0E0'\n        DARK_GRAY = '#2A2A2A'\n        DARKER_GRAY = '#1A1A1A'\n        BLACK_BG = '#0A0A0A'\n        \n        # Configure root\n        self.root.configure(bg=BLACK_BG)\n        \n        # Ultimate title style\n        style.configure('Ultimate.TLabel', \n                       foreground=NEON_CYAN, \n                       background=BLACK_BG,\n                       font=('Segoe UI Light', 28, 'bold'))\n        \n        style.configure('Subtitle.TLabel', \n                       foreground=ELECTRIC_BLUE, \n                       background=BLACK_BG,\n                       font=('Segoe UI', 12))\n        \n        style.configure('Joke.TLabel', \n                       foreground=HOT_PINK, \n                       background=BLACK_BG,\n                       font=('Segoe UI', 10, 'italic'))\n        \n        # Button styles\n        style.configure('Launch.TButton', \n                       foreground='white',\n                       background=CYBER_GREEN,\n                       font=('Segoe UI', 12, 'bold'),\n                       relief='flat')\n        \n        style.configure('QuickAccess.TButton', \n                       foreground='white',\n                       background=ELECTRIC_BLUE,\n                       font=('Segoe UI', 9, 'bold'),\n                       relief='flat')\n        \n        # Status and info styles\n        style.configure('Status.TLabel', \n                       foreground=LIGHT_GRAY, \n                       background=BLACK_BG,\n                       font=('Segoe UI', 9))\n        \n        style.configure('Version.TLabel', \n                       foreground=DEEP_PURPLE, \n                       background=BLACK_BG,\n                       font=('Segoe UI', 8, 'bold'))\n    \n    # Enhanced functionality methods\n    \n    def start_joke_rotation(self):\n        \"\"\"Start rotating dad jokes\"\"\"\n        def rotate_joke():\n            if hasattr(self, 'joke_label'):\n                try:\n                    new_joke = self.dad_jokes.get_smart_joke()\n                    self.joke_label.config(text=new_joke)\n                except:\n                    pass\n            # Schedule next rotation\n            self.joke_timer_id = self.root.after(30000, rotate_joke)  # Every 30 seconds\n        \n        self.joke_timer_id = self.root.after(30000, rotate_joke)\n    \n    def show_random_joke(self):\n        \"\"\"Show a random dad joke immediately\"\"\"\n        joke = self.dad_jokes.get_random_joke()\n        self.joke_label.config(text=joke)\n        self.show_notification(f\"😂 {joke}\", \"info\")\n    \n    def show_notification(self, message, msg_type=\"info\"):\n        \"\"\"Show notification message\"\"\"\n        if msg_type == \"info\":\n            messagebox.showinfo(\"🎯 MissDorking Ultimate\", message)\n        elif msg_type == \"error\":\n            messagebox.showerror(\"❌ MissDorking Ultimate\", message)\n        elif msg_type == \"success\":\n            messagebox.showinfo(\"✅ MissDorking Ultimate\", message)\n    \n    def open_branding_config(self):\n        \"\"\"Open branding configuration\"\"\"\n        show_branding_config(self.root)\n        # Refresh customer list after potential changes\n        self.root.after(500, self.update_customer_list)\n    \n    def update_customer_list(self):\n        \"\"\"Update customer dropdown\"\"\"\n        if hasattr(self, 'customer_combo'):\n            customers = self.branding_manager.get_all_customers()\n            customer_list = [\"[No Customer Selected]\"]\n            for cust_id, cust_data in customers.items():\n                name = cust_data.get('name', 'Unknown')\n                company = cust_data.get('company', '')\n                display_name = f\"{name} - {company}\" if company else name\n                customer_list.append(f\"{cust_id}:{display_name}\")\n            \n            self.customer_combo['values'] = customer_list\n            if not self.customer_var.get():\n                self.customer_var.set(customer_list[0])\n    \n    def refresh_customer_display(self):\n        \"\"\"Refresh customer display list\"\"\"\n        if hasattr(self, 'customer_listbox'):\n            self.customer_listbox.delete(0, tk.END)\n            customers = self.branding_manager.get_all_customers()\n            \n            if not customers:\n                self.customer_listbox.insert(tk.END, \"No customers added yet - Click 'Add New Customer' to get started!\")\n            else:\n                for cust_id, cust_data in customers.items():\n                    display_text = f\"👤 {cust_data.get('name', 'Unknown')}\"\n                    if cust_data.get('company'):\n                        display_text += f\" ({cust_data['company']})\"\n                    display_text += f\" - ID: {cust_id}\"\n                    self.customer_listbox.insert(tk.END, display_text)\n    \n    def add_customer_quick(self):\n        \"\"\"Quick add customer dialog\"\"\"\n        # Simple dialog for adding customers\n        dialog = tk.Toplevel(self.root)\n        dialog.title(\"Add New Customer\")\n        dialog.geometry(\"400x300\")\n        dialog.configure(bg='#0a0a0a')\n        \n        # Simple form\n        ttk.Label(dialog, text=\"Customer Name:\").pack(pady=5)\n        name_entry = ttk.Entry(dialog, width=40)\n        name_entry.pack(pady=5)\n        \n        ttk.Label(dialog, text=\"Company:\").pack(pady=5)\n        company_entry = ttk.Entry(dialog, width=40)\n        company_entry.pack(pady=5)\n        \n        def save_customer():\n            name = name_entry.get().strip()\n            company = company_entry.get().strip()\n            if name:\n                import uuid\n                customer_id = str(uuid.uuid4())[:8]\n                self.branding_manager.add_customer(customer_id, name, company)\n                dialog.destroy()\n                self.refresh_customer_display()\n                self.update_customer_list()\n                self.show_notification(f\"✅ Customer '{name}' added successfully!\", \"success\")\n            else:\n                self.show_notification(\"Please enter a customer name.\", \"error\")\n        \n        ttk.Button(dialog, text=\"Save Customer\", command=save_customer).pack(pady=20)\n    \n    def select_all_categories(self):\n        \"\"\"Select all categories\"\"\"\n        for var in self.category_vars.values():\n            var.set(True)\n    \n    def clear_all_categories(self):\n        \"\"\"Clear all categories\"\"\"\n        for var in self.category_vars.values():\n            var.set(False)\n    \n    def on_enter_pressed(self, event):\n        \"\"\"Handle Enter key in domain entry\"\"\"\n        if not self.is_running:\n            self.start_enhanced_scan()\n    \n    def start_enhanced_scan(self):\n        \"\"\"Start enhanced scanning with dad jokes\"\"\"\n        if self.is_running:\n            self.show_notification(\"Scan already in progress! 🚀\", \"info\")\n            return\n        \n        domain = self.domain_var.get().strip()\n        if not domain:\n            self.show_notification(\"Please enter a domain to scan! 🎯\", \"error\")\n            return\n        \n        # Check categories\n        if not any(var.get() for var in self.category_vars.values()):\n            self.show_notification(\"Please select at least one category! 📋\", \"error\")\n            return\n        \n        # Show scan joke\n        scan_joke = get_scan_message()\n        self.progress_var.set(f\"🚀 {scan_joke}\")\n        \n        self.is_running = True\n        self.scan_button.config(state='disabled', text='🔄 SCANNING...')\n        self.pdf_button.config(state='disabled')\n        self.csv_button.config(state='disabled')\n        \n        # Start scan in thread\n        thread = threading.Thread(target=self.run_enhanced_scan)\n        thread.daemon = True\n        thread.start()\n    \n    def run_enhanced_scan(self):\n        \"\"\"Run the enhanced scanning process with jokes\"\"\"\n        try:\n            domain = self.domain_var.get().strip()\n            max_results = int(self.results_per_query_var.get())\n            \n            # Clean domain\n            domain = domain.replace('http://', '').replace('https://', '').replace('www.', '')\n            \n            # Get selected categories\n            selected_categories = [cat for cat, var in self.category_vars.items() if var.get()]\n            \n            # Get dorks\n            all_dorks = get_all_dorks_for_domain(domain)\n            filtered_dorks = {cat: dorks for cat, dorks in all_dorks.items() \n                            if cat in selected_categories}\n            \n            # Count total queries\n            total_queries = sum(len(dorks) for dorks in filtered_dorks.values())\n            \n            self.root.after(0, lambda: self.progress_bar.config(maximum=total_queries))\n            self.root.after(0, lambda: self.results_text.delete(1.0, tk.END))\n            \n            # Add header with style\n            header = f\"\"\"\n🎯 MISSDORKING™ ULTIMATE SCAN REPORT\n{'='*80}\nTarget: {domain}\nTimestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\nCategories: {', '.join(selected_categories)}\nTotal Queries: {total_queries}\n{'='*80}\n\n\"\"\"\n            \n            self.root.after(0, lambda: self.results_text.insert(tk.END, header))\n            \n            results = {}\n            current_query = 0\n            \n            for category, dorks in filtered_dorks.items():\n                category_results = {}\n                self.root.after(0, lambda c=category: self.results_text.insert(\n                    tk.END, f\"\\n🎯 === {c.upper()} === 🎯\\n\"))\n                \n                for dork in dorks:\n                    current_query += 1\n                    progress_pct = (current_query / total_queries) * 100\n                    \n                    # Update progress with joke\n                    progress_joke = get_progress_message(progress_pct)\n                    self.root.after(0, lambda q=current_query, t=total_queries, j=progress_joke: \n                                   self.progress_var.set(f\"[{q}/{t}] {j}\"))\n                    self.root.after(0, lambda v=current_query: self.progress_bar.config(value=v))\n                    \n                    # Perform search\n                    search_results = self.scraper.search_google(dork, max_results)\n                    category_results[dork] = search_results\n                    \n                    # Display results with enhanced formatting\n                    result_count = len(search_results)\n                    if result_count > 0:\n                        self.root.after(0, lambda d=dork, c=result_count: \n                                       self.results_text.insert(tk.END, f\"✅ {d}: {c} results\\n\"))\n                        \n                        # Show top results\n                        for i, result in enumerate(search_results[:3]):\n                            title = result.get('title', 'No title')[:100]\n                            url = result.get('url', 'No URL')\n                            self.root.after(0, lambda t=title, u=url: \n                                           self.results_text.insert(tk.END, f\"  🎯 {t}\\n     🔗 {u}\\n\"))\n                        \n                        if result_count > 3:\n                            self.root.after(0, lambda c=result_count: \n                                           self.results_text.insert(tk.END, f\"  📋 ... and {c-3} more results\\n\"))\n                    else:\n                        self.root.after(0, lambda d=dork: \n                                       self.results_text.insert(tk.END, f\"❌ {d}: No results\\n\"))\n                    \n                    self.root.after(0, lambda: self.results_text.insert(tk.END, \"\\n\"))\n                    self.root.after(0, lambda: self.results_text.see(tk.END))\n                \n                results[category] = category_results\n            \n            # Final analysis and completion\n            self.root.after(0, lambda: self.progress_var.set(\"🎯 Analyzing results for security intelligence...\"))\n            analyzed_results = self.analyzer.categorize_results(results)\n            \n            # Generate summary\n            summary_report = self.analyzer.generate_report_summary(analyzed_results)\n            self.root.after(0, lambda: self.results_text.insert(tk.END, summary_report))\n            \n            self.results = analyzed_results\n            \n            # Completion with dad joke\n            total_results = sum(sum(len(results) for results in cat.values()) \n                              for cat in results.values())\n            \n            completion_joke = get_export_message()\n            final_message = f\"🎉 SCAN COMPLETE! 🎉\\n{total_results} total results found!\\n\\n😂 {completion_joke}\"\n            \n            self.root.after(0, lambda: self.progress_var.set(final_message.split('\\n')[0]))\n            self.root.after(0, lambda: self.results_text.insert(tk.END, f\"\\n{'='*80}\\n{final_message}\\n{'='*80}\\n\"))\n            self.root.after(0, lambda: self.results_text.see(tk.END))\n            \n            logging.info(f\"Enhanced scan completed for {domain}. Total results: {total_results}\")\n            \n        except Exception as e:\n            error_msg = f\"Scan failed: {str(e)}\"\n            self.root.after(0, lambda: self.show_notification(f\"❌ {error_msg}\", \"error\"))\n            logging.error(error_msg)\n        \n        finally:\n            self.is_running = False\n            self.root.after(0, lambda: self.scan_button.config(state='normal', text='🚀 LAUNCH SCAN'))\n            self.root.after(0, lambda: self.pdf_button.config(state='normal'))\n            self.root.after(0, lambda: self.csv_button.config(state='normal'))\n    \n    def export_enhanced_pdf(self):\n        \"\"\"Export PDF with enhanced branding and customer info\"\"\"\n        if not self.results:\n            self.show_notification(\"No results to export! Run a scan first. 🎯\", \"error\")\n            return\n        \n        # Get customer ID if selected\n        customer_selection = self.customer_var.get()\n        customer_id = None\n        if customer_selection and not customer_selection.startswith('[No Customer'):\n            customer_id = customer_selection.split(':')[0]\n        \n        try:\n            domain = self.domain_var.get().strip()\n            filename = filedialog.asksaveasfilename(\n                defaultextension=\".pdf\",\n                filetypes=[(\"PDF files\", \"*.pdf\"), (\"All files\", \"*.*\")],\n                title=\"Save Professional PDF Report\"\n            )\n            \n            if filename:\n                # Show export joke\n                export_joke = get_export_message()\n                self.progress_var.set(f\"📄 {export_joke}\")\n                \n                # Export with customer info\n                filepath = self.exporter.export_to_pdf(self.results, domain, filename, customer_id)\n                self.show_notification(f\"✅ Professional PDF report saved!\\n{filepath}\", \"success\")\n                \n                if messagebox.askyesno(\"Open Report\", \"Would you like to open the PDF report?\"):\n                    if sys.platform.startswith('win'):\n                        os.startfile(filepath)\n                    else:\n                        webbrowser.open(f'file://{filepath}')\n                        \n        except Exception as e:\n            self.show_notification(f\"❌ PDF export failed: {str(e)}\", \"error\")\n    \n    def export_enhanced_csv(self):\n        \"\"\"Export CSV with enhanced data\"\"\"\n        if not self.results:\n            self.show_notification(\"No results to export! Run a scan first. 🎯\", \"error\")\n            return\n        \n        try:\n            domain = self.domain_var.get().strip()\n            filename = filedialog.asksaveasfilename(\n                defaultextension=\".csv\",\n                filetypes=[(\"CSV files\", \"*.csv\"), (\"All files\", \"*.*\")],\n                title=\"Save CSV Data Export\"\n            )\n            \n            if filename:\n                export_joke = get_export_message()\n                self.progress_var.set(f\"📊 {export_joke}\")\n                \n                filepath = self.exporter.export_to_csv(self.results, domain, filename)\n                self.show_notification(f\"✅ CSV data exported successfully!\\n{filepath}\", \"success\")\n                \n                if messagebox.askyesno(\"Open File\", \"Would you like to open the CSV file?\"):\n                    if sys.platform.startswith('win'):\n                        os.startfile(filepath)\n                    else:\n                        webbrowser.open(f'file://{filepath}')\n                        \n        except Exception as e:\n            self.show_notification(f\"❌ CSV export failed: {str(e)}\", \"error\")\n    \n    def clear_results(self):\n        \"\"\"Clear results with confirmation\"\"\"\n        if messagebox.askyesno(\"Clear Results\", \"Are you sure you want to clear all results?\"):\n            self.results_text.delete(1.0, tk.END)\n            self.results = {}\n            self.progress_bar.config(value=0)\n            self.progress_var.set(\"🎯 Results cleared - Ready for next mission!\")\n            self.pdf_button.config(state='disabled')\n            self.csv_button.config(state='disabled')\n            \n            # Show a dad joke to cheer up\n            joke = self.dad_jokes.get_random_joke()\n            self.root.after(2000, lambda: self.progress_var.set(f\"😂 {joke}\"))\n    \n    def show_about_dialog(self):\n        \"\"\"Show about dialog with dad joke\"\"\"\n        about_text = f\"\"\"\n🚀 MISSDORKING™ ULTIMATE v2.0 🚀\n\nThe most advanced Google Dorking platform ever created!\n\n✨ Features:\n• Professional PDF/CSV exports with company branding\n• Customer management and logo integration\n• Dad jokes for enhanced user experience\n• Futuristic UI with cyberpunk aesthetics\n• Advanced intelligence categorization\n• Bulk scanning capabilities\n\n💋 Making cybersecurity fabulous since 2024!\n\n😂 Random Dad Joke:\n{self.dad_jokes.get_random_joke()}\n\n© 2024 MissDorking™ - Professional Intelligence Suite\n        \"\"\"\n        \n        messagebox.showinfo(\"About MissDorking Ultimate\", about_text)\n    \n    def __del__(self):\n        \"\"\"Cleanup when app is destroyed\"\"\"\n        if hasattr(self, 'joke_timer_id') and self.joke_timer_id:\n            try:\n                self.root.after_cancel(self.joke_timer_id)\n            except:\n                pass\n\ndef main():\n    \"\"\"Launch MissDorking Ultimate! 🚀\"\"\"\n    \n    def start_ultimate_app():\n        \"\"\"Start the ultimate application\"\"\"\n        root = tk.Tk()\n        app = MissDorkingUltimate(root)\n        \n        try:\n            root.mainloop()\n        except KeyboardInterrupt:\n            logging.info(\"Ultimate app interrupted by user\")\n        except Exception as e:\n            logging.error(f\"Ultimate app error: {e}\")\n            messagebox.showerror(\"Fatal Error\", f\"An unexpected error occurred:\\n{e}\")\n    \n    # Show fun splash screen if available, then start app\n    try:\n        from fun_splash import show_fun_splash\n        show_fun_splash(start_ultimate_app)\n    except ImportError:\n        # No splash screen available, start directly\n        start_ultimate_app()\n\nif __name__ == \"__main__\":\n    main()
+        main_title = ttk.Label(
+            title_frame,
+            text="🚀 MISSDORKING™ ULTIMATE 🚀",
+            style='Ultimate.TLabel'
+        )
+        main_title.grid(row=0, column=0)
+        
+        # Subtitle with company branding if available
+        company_info = self.branding_manager.get_company_info() if self.branding_manager else None
+        if company_info and company_info.get('name') != 'Your Company Name':
+            subtitle_text = f"Professional Intelligence Platform - Powered by {company_info['name']}"
+        else:
+            subtitle_text = "The Ultimate Google Dorking & Cybersecurity Intelligence Suite"
+            
+        subtitle = ttk.Label(
+            title_frame,
+            text=subtitle_text,
+            style='Subtitle.TLabel'
+        )
+        subtitle.grid(row=1, column=0, pady=(5, 0))
+        
+        # Dynamic joke display
+        self.joke_label = ttk.Label(
+            title_frame,
+            text=self.dad_jokes.get_smart_joke(),
+            style='Joke.TLabel'
+        )
+        self.joke_label.grid(row=2, column=0, pady=(10, 0))
+        
+        # Quick access buttons
+        self.create_quick_access_buttons(title_frame)
+    
+    def create_quick_access_buttons(self, parent):
+        """Create quick access buttons for common actions"""
+        buttons_frame = ttk.Frame(parent)
+        buttons_frame.grid(row=3, column=0, pady=(15, 0))
+        
+        # Branding config button
+        branding_btn = ttk.Button(
+            buttons_frame,
+            text="🎨 Company Branding",
+            command=self.open_branding_config,
+            style='QuickAccess.TButton'
+        )
+        branding_btn.pack(side=tk.LEFT, padx=5)
+        
+        # New joke button
+        joke_btn = ttk.Button(
+            buttons_frame,
+            text="😂 New Dad Joke",
+            command=self.show_random_joke,
+            style='QuickAccess.TButton'
+        )
+        joke_btn.pack(side=tk.LEFT, padx=5)
+        
+        # About button
+        about_btn = ttk.Button(
+            buttons_frame,
+            text="ℹ️ About Ultimate",
+            command=self.show_about_dialog,
+            style='QuickAccess.TButton'
+        )
+        about_btn.pack(side=tk.LEFT, padx=5)
+    
+    def create_enhanced_tabs(self, parent):
+        """Create enhanced tabbed interface"""
+        self.notebook = ttk.Notebook(parent)
+        self.notebook.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=20, pady=(0, 20))
+        
+        # Enhanced single domain tab
+        self.create_enhanced_single_tab()
+        
+        # Enhanced bulk scanning tab
+        self.create_enhanced_bulk_tab()
+        
+        # New customer management tab
+        self.create_customer_tab()
+        
+        # Export hub tab
+        self.create_export_hub_tab()
+    
+    def create_enhanced_single_tab(self):
+        """Enhanced single domain scanning tab"""
+        single_frame = ttk.Frame(self.notebook, padding="15")
+        self.notebook.add(single_frame, text="🎯 Single Domain Intel")
+        
+        single_frame.columnconfigure(1, weight=1)
+        single_frame.rowconfigure(5, weight=1)
+        
+        # Enhanced input section
+        input_frame = ttk.LabelFrame(single_frame, text="🎯 TARGET ACQUISITION", padding="15")
+        input_frame.grid(row=0, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 15))
+        input_frame.columnconfigure(1, weight=1)
+        
+        ttk.Label(input_frame, text="Domain Target:", style='Header.TLabel').grid(
+            row=0, column=0, sticky=tk.W, padx=(0, 10))
+        
+        self.domain_var = tk.StringVar()
+        self.domain_entry = ttk.Entry(input_frame, textvariable=self.domain_var, 
+                                     font=('Segoe UI', 12), width=40)
+        self.domain_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
+        self.domain_entry.bind('<Return>', self.on_enter_pressed)
+        
+        self.scan_button = ttk.Button(input_frame, text="🚀 LAUNCH SCAN", 
+                                    command=self.start_enhanced_scan, style='Launch.TButton')
+        self.scan_button.grid(row=0, column=2)
+        
+        # Enhanced options
+        self.create_enhanced_options(single_frame)
+        
+        # Progress section with jokes
+        self.create_progress_section(single_frame)
+        
+        # Enhanced results section
+        self.create_enhanced_results(single_frame)
+    
+    def create_enhanced_options(self, parent):
+        """Create enhanced options section"""
+        options_frame = ttk.LabelFrame(parent, text="⚙️ SCAN CONFIGURATION", padding="15")
+        options_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 15))
+        options_frame.columnconfigure(1, weight=1)
+        
+        # Results per query
+        ttk.Label(options_frame, text="Results per query:").grid(row=0, column=0, sticky=tk.W, pady=5)
+        self.results_per_query_var = tk.StringVar(value="10")
+        results_spinbox = ttk.Spinbox(options_frame, from_=1, to=50, width=10,
+                                     textvariable=self.results_per_query_var)
+        results_spinbox.grid(row=0, column=1, sticky=tk.W, padx=(10, 0), pady=5)
+        
+        # Delay settings
+        ttk.Label(options_frame, text="Scan speed:").grid(row=0, column=2, sticky=tk.W, padx=(20, 0), pady=5)
+        self.speed_var = tk.StringVar(value="Balanced")
+        speed_combo = ttk.Combobox(options_frame, textvariable=self.speed_var,
+                                  values=["Conservative", "Balanced", "Aggressive", "Ludicrous"], 
+                                  width=12, state='readonly')
+        speed_combo.grid(row=0, column=3, sticky=tk.W, padx=(10, 0), pady=5)
+        
+        # Category selection with enhanced display
+        self.create_enhanced_categories(options_frame)
+    
+    def create_enhanced_categories(self, parent):
+        """Enhanced category selection"""
+        cat_frame = ttk.LabelFrame(parent, text="🎯 Intelligence Categories", padding="10")
+        cat_frame.grid(row=1, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=(10, 0))
+        cat_frame.columnconfigure(0, weight=1)
+        
+        # Select all / none buttons
+        button_frame = ttk.Frame(cat_frame)
+        button_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
+        
+        ttk.Button(button_frame, text="✅ Select All", 
+                  command=self.select_all_categories, style='Utility.TButton').pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(button_frame, text="❌ Clear All", 
+                  command=self.clear_all_categories, style='Utility.TButton').pack(side=tk.LEFT, padx=(0, 5))
+        
+        # Categories with counts
+        categories_frame = ttk.Frame(cat_frame)
+        categories_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))
+        
+        self.category_vars = {}
+        row, col = 0, 0
+        for category in GOOGLE_DORKS.keys():
+            var = tk.BooleanVar(value=True)
+            self.category_vars[category] = var
+            
+            dork_count = len(GOOGLE_DORKS[category])
+            text = f"{category} ({dork_count})"
+            
+            checkbox = ttk.Checkbutton(categories_frame, text=text, variable=var)
+            checkbox.grid(row=row, column=col, sticky=tk.W, padx=(0, 20), pady=2)
+            
+            col += 1
+            if col >= 3:
+                col = 0
+                row += 1
+    
+    def create_progress_section(self, parent):
+        """Enhanced progress section with dad jokes"""
+        progress_frame = ttk.LabelFrame(parent, text="📊 SCAN STATUS", padding="15")
+        progress_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 15))
+        progress_frame.columnconfigure(0, weight=1)
+        
+        self.progress_var = tk.StringVar(value="🎯 Ready to unleash digital reconnaissance...")
+        self.progress_label = ttk.Label(progress_frame, textvariable=self.progress_var, 
+                                       style='Progress.TLabel')
+        self.progress_label.grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
+        
+        self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate',
+                                           style='Modern.Horizontal.TProgressbar')
+        self.progress_bar.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(0, 5))
+        
+        # Live stats
+        self.stats_label = ttk.Label(progress_frame, text="", 
+                                    style='Stats.TLabel')
+        self.stats_label.grid(row=2, column=0, sticky=tk.W)
+    
+    def create_enhanced_results(self, parent):
+        """Enhanced results section"""
+        results_frame = ttk.LabelFrame(parent, text="🎯 INTELLIGENCE RESULTS", padding="15")
+        results_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 15))
+        results_frame.columnconfigure(0, weight=1)
+        results_frame.rowconfigure(0, weight=1)
+        
+        # Results display with enhanced formatting
+        self.results_text = scrolledtext.ScrolledText(
+            results_frame, 
+            height=20, 
+            width=100,
+            font=('Consolas', 9),
+            bg='#1a1a1a',
+            fg='#00FF88',
+            insertbackground='#00CCFF',
+            selectbackground='#FF1493'
+        )
+        self.results_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 15))
+        
+        # Enhanced export options
+        self.create_enhanced_export_buttons(results_frame)
+    
+    def create_enhanced_export_buttons(self, parent):
+        """Enhanced export buttons with customer selection"""
+        export_frame = ttk.Frame(parent)
+        export_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))
+        
+        # Customer selection for exports
+        ttk.Label(export_frame, text="Customer:").pack(side=tk.LEFT, padx=(0, 5))
+        
+        self.customer_var = tk.StringVar()
+        customer_combo = ttk.Combobox(export_frame, textvariable=self.customer_var, 
+                                     width=20, state='readonly')
+        customer_combo.pack(side=tk.LEFT, padx=(0, 15))
+        self.customer_combo = customer_combo
+        self.update_customer_list()
+        
+        # Export buttons
+        self.pdf_button = ttk.Button(export_frame, text="📄 Export Professional PDF",
+                                   command=self.export_enhanced_pdf, style='Export.TButton')
+        self.pdf_button.pack(side=tk.LEFT, padx=(0, 10))
+        
+        self.csv_button = ttk.Button(export_frame, text="📊 Export CSV Data",
+                                   command=self.export_enhanced_csv, style='Export.TButton')
+        self.csv_button.pack(side=tk.LEFT, padx=(0, 10))
+        
+        self.clear_button = ttk.Button(export_frame, text="🗑️ Clear Results",
+                                     command=self.clear_results, style='Utility.TButton')
+        self.clear_button.pack(side=tk.RIGHT)
+        
+        # Initially disable export buttons
+        self.pdf_button.config(state='disabled')
+        self.csv_button.config(state='disabled')
+    
+    def create_enhanced_bulk_tab(self):
+        """Enhanced bulk scanning tab"""
+        bulk_frame = ttk.Frame(self.notebook, padding="15")
+        self.notebook.add(bulk_frame, text="🚀 Mass Intelligence")
+        
+        # Enhanced bulk scanning would go here
+        ttk.Label(bulk_frame, text="🚀 MASS INTELLIGENCE OPERATIONS", 
+                 style='Ultimate.TLabel').pack(pady=20)
+        
+        ttk.Label(bulk_frame, 
+                 text="Enhanced bulk scanning with professional reporting\nand customer management integration!", 
+                 style='Subtitle.TLabel').pack(pady=10)
+        
+        ttk.Label(bulk_frame, 
+                 text="🚧 Advanced bulk features coming in the next version! 🚧",
+                 style='Info.TLabel').pack(pady=30)
+    
+    def create_customer_tab(self):
+        """Customer management tab"""
+        customer_frame = ttk.Frame(self.notebook, padding="15")
+        self.notebook.add(customer_frame, text="👥 Customer Hub")
+        
+        ttk.Label(customer_frame, text="👥 CUSTOMER MANAGEMENT HUB", 
+                 style='Ultimate.TLabel').pack(pady=20)
+        
+        # Quick customer management
+        mgmt_frame = ttk.LabelFrame(customer_frame, text="Customer Management", padding="15")
+        mgmt_frame.pack(fill=tk.X, pady=20)
+        
+        ttk.Button(mgmt_frame, text="➕ Add New Customer", 
+                  command=self.add_customer_quick, style='Action.TButton').pack(side=tk.LEFT, padx=5)
+        
+        ttk.Button(mgmt_frame, text="🎨 Open Branding Studio", 
+                  command=self.open_branding_config, style='Secondary.TButton').pack(side=tk.LEFT, padx=5)
+        
+        # Customer list
+        list_frame = ttk.LabelFrame(customer_frame, text="Current Customers", padding="15")
+        list_frame.pack(fill=tk.BOTH, expand=True, pady=20)
+        
+        self.customer_listbox = tk.Listbox(list_frame, height=15, 
+                                          bg='#2a2a2a', fg='#00CCFF', 
+                                          selectbackground='#FF1493')
+        self.customer_listbox.pack(fill=tk.BOTH, expand=True)
+        
+        self.refresh_customer_display()
+    
+    def create_export_hub_tab(self):
+        """Export hub tab"""
+        export_frame = ttk.Frame(self.notebook, padding="15")
+        self.notebook.add(export_frame, text="📄 Export Hub")
+        
+        ttk.Label(export_frame, text="📄 PROFESSIONAL EXPORT HUB", 
+                 style='Ultimate.TLabel').pack(pady=20)
+        
+        # Export templates and options would go here
+        ttk.Label(export_frame, 
+                 text="Professional PDF and CSV export with company branding,\ncustomer information, and dad jokes!",
+                 style='Subtitle.TLabel').pack(pady=10)
+        
+        # Export history
+        ttk.Label(export_frame, text="📋 Recent Exports", 
+                 style='Header.TLabel').pack(anchor=tk.W, pady=(30, 10))
+        
+        export_list = tk.Listbox(export_frame, height=10, 
+                                bg='#2a2a2a', fg='#00CCFF')
+        export_list.pack(fill=tk.BOTH, expand=True, pady=10)
+    
+    def create_ultimate_status_bar(self, parent):
+        """Ultimate status bar with jokes and stats"""
+        status_frame = ttk.Frame(parent, style='Status.TFrame', padding="15")
+        status_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), padx=20, pady=(0, 20))
+        status_frame.columnconfigure(0, weight=1)
+        
+        self.status_var = tk.StringVar(value=f"🎯 System Online • {get_dork_count()} Neural Queries Loaded • Ready for Digital Domination")
+        status_label = ttk.Label(status_frame, textvariable=self.status_var, style='Status.TLabel')
+        status_label.grid(row=0, column=0, sticky=tk.W)
+        
+        # Version info
+        version_label = ttk.Label(status_frame, text="v2.0 ULTIMATE 🚀", style='Version.TLabel')
+        version_label.grid(row=0, column=1, sticky=tk.E)
+    
+    def setup_ultimate_styles(self):
+        """Setup ultimate futuristic styles"""
+        style = ttk.Style()
+        
+        try:
+            style.theme_use('clam')
+        except:
+            pass
+        
+        # Ultimate color scheme
+        NEON_CYAN = '#00FFFF'
+        HOT_PINK = '#FF1493'
+        CYBER_GREEN = '#00FF88'
+        ELECTRIC_BLUE = '#00CCFF'
+        DEEP_PURPLE = '#8A2BE2'
+        LIGHT_GRAY = '#E0E0E0'
+        DARK_GRAY = '#2A2A2A'
+        DARKER_GRAY = '#1A1A1A'
+        BLACK_BG = '#0A0A0A'
+        
+        # Configure root
+        self.root.configure(bg=BLACK_BG)
+        
+        # Ultimate title style
+        style.configure('Ultimate.TLabel', 
+                       foreground=NEON_CYAN, 
+                       background=BLACK_BG,
+                       font=('Segoe UI Light', 28, 'bold'))
+        
+        style.configure('Subtitle.TLabel', 
+                       foreground=ELECTRIC_BLUE, 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 12))
+        
+        style.configure('Joke.TLabel', 
+                       foreground=HOT_PINK, 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 10, 'italic'))
+        
+        # Button styles
+        style.configure('Launch.TButton', 
+                       foreground='white',
+                       background=CYBER_GREEN,
+                       font=('Segoe UI', 12, 'bold'),
+                       relief='flat')
+        
+        style.configure('QuickAccess.TButton', 
+                       foreground='white',
+                       background=ELECTRIC_BLUE,
+                       font=('Segoe UI', 9, 'bold'),
+                       relief='flat')
+        
+        # More button styles
+        style.configure('Action.TButton', 
+                       foreground='white',
+                       background=CYBER_GREEN,
+                       font=('Segoe UI', 10, 'bold'),
+                       relief='flat')
+        
+        style.configure('Secondary.TButton', 
+                       foreground='white',
+                       background=HOT_PINK,
+                       font=('Segoe UI', 10, 'bold'),
+                       relief='flat')
+        
+        style.configure('Export.TButton', 
+                       foreground='white',
+                       background=DARK_GRAY,
+                       font=('Segoe UI', 9, 'bold'),
+                       relief='flat')
+        
+        style.configure('Utility.TButton', 
+                       foreground=LIGHT_GRAY,
+                       background=DARKER_GRAY,
+                       font=('Segoe UI', 9),
+                       relief='flat')
+        
+        # Status and info styles
+        style.configure('Status.TLabel', 
+                       foreground=LIGHT_GRAY, 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 9))
+        
+        style.configure('Version.TLabel', 
+                       foreground=DEEP_PURPLE, 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 8, 'bold'))
+        
+        style.configure('Progress.TLabel', 
+                       foreground=CYBER_GREEN, 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 10))
+        
+        style.configure('Stats.TLabel', 
+                       foreground=ELECTRIC_BLUE, 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 8))
+        
+        style.configure('Header.TLabel', 
+                       foreground=HOT_PINK, 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 11, 'bold'))
+        
+        style.configure('Info.TLabel', 
+                       foreground='orange', 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 12))
+    
+    # Enhanced functionality methods
+    
+    def start_joke_rotation(self):
+        """Start rotating dad jokes"""
+        def rotate_joke():
+            if hasattr(self, 'joke_label'):
+                try:
+                    new_joke = self.dad_jokes.get_smart_joke()
+                    self.joke_label.config(text=new_joke)
+                except:
+                    pass
+            # Schedule next rotation
+            self.joke_timer_id = self.root.after(30000, rotate_joke)  # Every 30 seconds
+        
+        self.joke_timer_id = self.root.after(30000, rotate_joke)
+    
+    def show_random_joke(self):
+        """Show a random dad joke immediately"""
+        joke = self.dad_jokes.get_random_joke()
+        self.joke_label.config(text=joke)
+        self.show_notification(f"😂 {joke}", "info")
+    
+    def show_notification(self, message, msg_type="info"):
+        """Show notification message"""
+        if msg_type == "info":
+            messagebox.showinfo("🎯 MissDorking Ultimate", message)
+        elif msg_type == "error":
+            messagebox.showerror("❌ MissDorking Ultimate", message)
+        elif msg_type == "success":
+            messagebox.showinfo("✅ MissDorking Ultimate", message)
+    
+    def open_branding_config(self):
+        """Open branding configuration"""
+        show_branding_config(self.root)
+        # Refresh customer list after potential changes
+        self.root.after(500, self.update_customer_list)
+    
+    def update_customer_list(self):
+        """Update customer dropdown"""
+        if hasattr(self, 'customer_combo'):
+            customers = self.branding_manager.get_all_customers()
+            customer_list = ["[No Customer Selected]"]
+            for cust_id, cust_data in customers.items():
+                name = cust_data.get('name', 'Unknown')
+                company = cust_data.get('company', '')
+                display_name = f"{name} - {company}" if company else name
+                customer_list.append(f"{cust_id}:{display_name}")
+            
+            self.customer_combo['values'] = customer_list
+            if not self.customer_var.get():
+                self.customer_var.set(customer_list[0])
+    
+    def refresh_customer_display(self):
+        """Refresh customer display list"""
+        if hasattr(self, 'customer_listbox'):
+            self.customer_listbox.delete(0, tk.END)
+            customers = self.branding_manager.get_all_customers()
+            
+            if not customers:
+                self.customer_listbox.insert(tk.END, "No customers added yet - Click 'Add New Customer' to get started!")
+            else:
+                for cust_id, cust_data in customers.items():
+                    display_text = f"👤 {cust_data.get('name', 'Unknown')}"
+                    if cust_data.get('company'):
+                        display_text += f" ({cust_data['company']})"
+                    display_text += f" - ID: {cust_id}"
+                    self.customer_listbox.insert(tk.END, display_text)
+    
+    def add_customer_quick(self):
+        """Quick add customer dialog"""
+        # Simple dialog for adding customers
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Add New Customer")
+        dialog.geometry("400x300")
+        dialog.configure(bg='#0a0a0a')
+        
+        # Simple form
+        ttk.Label(dialog, text="Customer Name:").pack(pady=5)
+        name_entry = ttk.Entry(dialog, width=40)
+        name_entry.pack(pady=5)
+        
+        ttk.Label(dialog, text="Company:").pack(pady=5)
+        company_entry = ttk.Entry(dialog, width=40)
+        company_entry.pack(pady=5)
+        
+        def save_customer():
+            name = name_entry.get().strip()
+            company = company_entry.get().strip()
+            if name:
+                import uuid
+                customer_id = str(uuid.uuid4())[:8]
+                self.branding_manager.add_customer(customer_id, name, company)
+                dialog.destroy()
+                self.refresh_customer_display()
+                self.update_customer_list()
+                self.show_notification(f"✅ Customer '{name}' added successfully!", "success")
+            else:
+                self.show_notification("Please enter a customer name.", "error")
+        
+        ttk.Button(dialog, text="Save Customer", command=save_customer).pack(pady=20)
+    
+    def select_all_categories(self):
+        """Select all categories"""
+        for var in self.category_vars.values():
+            var.set(True)
+    
+    def clear_all_categories(self):
+        """Clear all categories"""
+        for var in self.category_vars.values():
+            var.set(False)
+    
+    def on_enter_pressed(self, event):
+        """Handle Enter key in domain entry"""
+        if not self.is_running:
+            self.start_enhanced_scan()
+    
+    def start_enhanced_scan(self):
+        """Start enhanced scanning with dad jokes"""
+        if self.is_running:
+            self.show_notification("Scan already in progress! 🚀", "info")
+            return
+        
+        domain = self.domain_var.get().strip()
+        if not domain:
+            self.show_notification("Please enter a domain to scan! 🎯", "error")
+            return
+        
+        # Check categories
+        if not any(var.get() for var in self.category_vars.values()):
+            self.show_notification("Please select at least one category! 📋", "error")
+            return
+        
+        # Show scan joke
+        scan_joke = get_scan_message()
+        self.progress_var.set(f"🚀 {scan_joke}")
+        
+        self.is_running = True
+        self.scan_button.config(state='disabled', text='🔄 SCANNING...')
+        self.pdf_button.config(state='disabled')
+        self.csv_button.config(state='disabled')
+        
+        # Start scan in thread
+        thread = threading.Thread(target=self.run_enhanced_scan)
+        thread.daemon = True
+        thread.start()
+    
+    def run_enhanced_scan(self):
+        """Run the enhanced scanning process with jokes"""
+        try:
+            domain = self.domain_var.get().strip()
+            max_results = int(self.results_per_query_var.get())
+            
+            # Clean domain
+            domain = domain.replace('http://', '').replace('https://', '').replace('www.', '')
+            
+            # Get selected categories
+            selected_categories = [cat for cat, var in self.category_vars.items() if var.get()]
+            
+            # Get dorks
+            all_dorks = get_all_dorks_for_domain(domain)
+            filtered_dorks = {cat: dorks for cat, dorks in all_dorks.items() 
+                            if cat in selected_categories}
+            
+            # Count total queries
+            total_queries = sum(len(dorks) for dorks in filtered_dorks.values())
+            
+            self.root.after(0, lambda: self.progress_bar.config(maximum=total_queries))
+            self.root.after(0, lambda: self.results_text.delete(1.0, tk.END))
+            
+            # Add header with style
+            header = f"""
+🎯 MISSDORKING™ ULTIMATE SCAN REPORT
+{'='*80}
+Target: {domain}
+Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Categories: {', '.join(selected_categories)}
+Total Queries: {total_queries}
+{'='*80}
+
+"""
+            
+            self.root.after(0, lambda: self.results_text.insert(tk.END, header))
+            
+            results = {}
+            current_query = 0
+            
+            for category, dorks in filtered_dorks.items():
+                category_results = {}
+                self.root.after(0, lambda c=category: self.results_text.insert(
+                    tk.END, f"\n🎯 === {c.upper()} === 🎯\n"))
+                
+                for dork in dorks:
+                    current_query += 1
+                    progress_pct = (current_query / total_queries) * 100
+                    
+                    # Update progress with joke
+                    progress_joke = get_progress_message(progress_pct)
+                    self.root.after(0, lambda q=current_query, t=total_queries, j=progress_joke: 
+                                   self.progress_var.set(f"[{q}/{t}] {j}"))
+                    self.root.after(0, lambda v=current_query: self.progress_bar.config(value=v))
+                    
+                    # Perform search
+                    search_results = self.scraper.search_google(dork, max_results)
+                    category_results[dork] = search_results
+                    
+                    # Display results with enhanced formatting
+                    result_count = len(search_results)
+                    if result_count > 0:
+                        self.root.after(0, lambda d=dork, c=result_count: 
+                                       self.results_text.insert(tk.END, f"✅ {d}: {c} results\n"))
+                        
+                        # Show top results
+                        for i, result in enumerate(search_results[:3]):
+                            title = result.get('title', 'No title')[:100]
+                            url = result.get('url', 'No URL')
+                            self.root.after(0, lambda t=title, u=url: 
+                                           self.results_text.insert(tk.END, f"  🎯 {t}\n     🔗 {u}\n"))
+                        
+                        if result_count > 3:
+                            self.root.after(0, lambda c=result_count: 
+                                           self.results_text.insert(tk.END, f"  📋 ... and {c-3} more results\n"))
+                    else:
+                        self.root.after(0, lambda d=dork: 
+                                       self.results_text.insert(tk.END, f"❌ {d}: No results\n"))
+                    
+                    self.root.after(0, lambda: self.results_text.insert(tk.END, "\n"))
+                    self.root.after(0, lambda: self.results_text.see(tk.END))
+                
+                results[category] = category_results
+            
+            # Final analysis and completion
+            self.root.after(0, lambda: self.progress_var.set("🎯 Analyzing results for security intelligence..."))
+            analyzed_results = self.analyzer.categorize_results(results)
+            
+            # Generate summary
+            summary_report = self.analyzer.generate_report_summary(analyzed_results)
+            self.root.after(0, lambda: self.results_text.insert(tk.END, summary_report))
+            
+            self.results = analyzed_results
+            
+            # Completion with dad joke
+            total_results = sum(sum(len(results) for results in cat.values()) 
+                              for cat in results.values())
+            
+            completion_joke = get_export_message()
+            final_message = f"🎉 SCAN COMPLETE! 🎉\n{total_results} total results found!\n\n😂 {completion_joke}"
+            
+            self.root.after(0, lambda: self.progress_var.set(final_message.split('\n')[0]))
+            self.root.after(0, lambda: self.results_text.insert(tk.END, f"\n{'='*80}\n{final_message}\n{'='*80}\n"))
+            self.root.after(0, lambda: self.results_text.see(tk.END))
+            
+            logging.info(f"Enhanced scan completed for {domain}. Total results: {total_results}")
+            
+        except Exception as e:
+            error_msg = f"Scan failed: {str(e)}"
+            self.root.after(0, lambda: self.show_notification(f"❌ {error_msg}", "error"))
+            logging.error(error_msg)
+        
+        finally:
+            self.is_running = False
+            self.root.after(0, lambda: self.scan_button.config(state='normal', text='🚀 LAUNCH SCAN'))
+            self.root.after(0, lambda: self.pdf_button.config(state='normal'))
+            self.root.after(0, lambda: self.csv_button.config(state='normal'))
+    
+    def export_enhanced_pdf(self):
+        """Export PDF with enhanced branding and customer info"""
+        if not self.results:
+            self.show_notification("No results to export! Run a scan first. 🎯", "error")
+            return
+        
+        # Get customer ID if selected
+        customer_selection = self.customer_var.get()
+        customer_id = None
+        if customer_selection and not customer_selection.startswith('[No Customer'):
+            customer_id = customer_selection.split(':')[0]
+        
+        try:
+            domain = self.domain_var.get().strip()
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")],
+                title="Save Professional PDF Report"
+            )
+            
+            if filename:
+                # Show export joke
+                export_joke = get_export_message()
+                self.progress_var.set(f"📄 {export_joke}")
+                
+                # Export with customer info
+                filepath = self.exporter.export_to_pdf(self.results, domain, filename, customer_id)
+                self.show_notification(f"✅ Professional PDF report saved!\n{filepath}", "success")
+                
+                if messagebox.askyesno("Open Report", "Would you like to open the PDF report?"):
+                    if sys.platform.startswith('win'):
+                        os.startfile(filepath)
+                    else:
+                        webbrowser.open(f'file://{filepath}')
+                        
+        except Exception as e:
+            self.show_notification(f"❌ PDF export failed: {str(e)}", "error")
+    
+    def export_enhanced_csv(self):
+        """Export CSV with enhanced data"""
+        if not self.results:
+            self.show_notification("No results to export! Run a scan first. 🎯", "error")
+            return
+        
+        try:
+            domain = self.domain_var.get().strip()
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Save CSV Data Export"
+            )
+            
+            if filename:
+                export_joke = get_export_message()
+                self.progress_var.set(f"📊 {export_joke}")
+                
+                filepath = self.exporter.export_to_csv(self.results, domain, filename)
+                self.show_notification(f"✅ CSV data exported successfully!\n{filepath}", "success")
+                
+                if messagebox.askyesno("Open File", "Would you like to open the CSV file?"):
+                    if sys.platform.startswith('win'):
+                        os.startfile(filepath)
+                    else:
+                        webbrowser.open(f'file://{filepath}')
+                        
+        except Exception as e:
+            self.show_notification(f"❌ CSV export failed: {str(e)}", "error")
+    
+    def clear_results(self):
+        """Clear results with confirmation"""
+        if messagebox.askyesno("Clear Results", "Are you sure you want to clear all results?"):
+            self.results_text.delete(1.0, tk.END)
+            self.results = {}
+            self.progress_bar.config(value=0)
+            self.progress_var.set("🎯 Results cleared - Ready for next mission!")
+            self.pdf_button.config(state='disabled')
+            self.csv_button.config(state='disabled')
+            
+            # Show a dad joke to cheer up
+            joke = self.dad_jokes.get_random_joke()
+            self.root.after(2000, lambda: self.progress_var.set(f"😂 {joke}"))
+    
+    def show_about_dialog(self):
+        """Show about dialog with dad joke"""
+        about_text = f"""
+🚀 MISSDORKING™ ULTIMATE v2.0 🚀
+
+The most advanced Google Dorking platform ever created!
+
+✨ Features:
+• Professional PDF/CSV exports with company branding
+• Customer management and logo integration
+• Dad jokes for enhanced user experience
+• Futuristic UI with cyberpunk aesthetics
+• Advanced intelligence categorization
+• Bulk scanning capabilities
+
+💋 Making cybersecurity fabulous since 2024!
+
+😂 Random Dad Joke:
+{self.dad_jokes.get_random_joke()}
+
+© 2024 MissDorking™ - Professional Intelligence Suite
+        """
+        
+        messagebox.showinfo("About MissDorking Ultimate", about_text)
+    
+    def __del__(self):
+        """Cleanup when app is destroyed"""
+        if hasattr(self, 'joke_timer_id') and self.joke_timer_id:
+            try:
+                self.root.after_cancel(self.joke_timer_id)
+            except:
+                pass
+
+def main():
+    """Launch MissDorking Ultimate! 🚀"""
+    
+    def start_ultimate_app():
+        """Start the ultimate application"""
+        root = tk.Tk()
+        app = MissDorkingUltimate(root)
+        
+        try:
+            root.mainloop()
+        except KeyboardInterrupt:
+            logging.info("Ultimate app interrupted by user")
+        except Exception as e:
+            logging.error(f"Ultimate app error: {e}")
+            messagebox.showerror("Fatal Error", f"An unexpected error occurred:\n{e}")
+    
+    # Show fun splash screen if available, then start app
+    try:
+        from fun_splash import show_fun_splash
+        show_fun_splash(start_ultimate_app)
+    except ImportError:
+        # No splash screen available, start directly
+        start_ultimate_app()
+
+if __name__ == "__main__":
+    main()

@@ -812,7 +812,7 @@ class MissDorkingUltimate:
         thread.start()
     
     def run_enhanced_scan(self):
-        """Run the enhanced scanning process with jokes"""
+        """Run the enhanced scanning process with jokes and progress tracking"""
         try:
             domain = self.domain_var.get().strip()
             max_results = int(self.results_per_query_var.get())
@@ -828,8 +828,9 @@ class MissDorkingUltimate:
             filtered_dorks = {cat: dorks for cat, dorks in all_dorks.items() 
                             if cat in selected_categories}
             
-            # Count total queries
+            # Count total queries and initialize timing
             total_queries = sum(len(dorks) for dorks in filtered_dorks.values())
+            scan_start_time = time.time()
             
             self.root.after(0, lambda: self.progress_bar.config(maximum=total_queries))
             self.root.after(0, lambda: self.results_text.delete(1.0, tk.END))
@@ -860,11 +861,32 @@ Total Queries: {total_queries}
                     current_query += 1
                     progress_pct = (current_query / total_queries) * 100
                     
-                    # Update progress with joke
+                    # Calculate timing and ETA
+                    elapsed_time = time.time() - scan_start_time
+                    if current_query > 0:
+                        avg_time_per_query = elapsed_time / current_query
+                        remaining_queries = total_queries - current_query
+                        eta_seconds = remaining_queries * avg_time_per_query
+                        
+                        # Format ETA
+                        if eta_seconds > 60:
+                            eta_text = f"{int(eta_seconds // 60)}m {int(eta_seconds % 60)}s"
+                        else:
+                            eta_text = f"{int(eta_seconds)}s"
+                    else:
+                        eta_text = "Calculating..."
+                    
+                    # Update progress with enhanced information
                     progress_joke = get_progress_message(progress_pct)
-                    self.root.after(0, lambda q=current_query, t=total_queries, j=progress_joke: 
-                                   self.progress_var.set(f"[{q}/{t}] {j}"))
+                    status_text = f"[{current_query}/{total_queries}] {progress_pct:.1f}% • ETA: {eta_text} • {progress_joke}"
+                    
+                    self.root.after(0, lambda st=status_text: self.progress_var.set(st))
                     self.root.after(0, lambda v=current_query: self.progress_bar.config(value=v))
+                    
+                    # Update stats display
+                    elapsed_text = f"{int(elapsed_time)}s" if elapsed_time < 60 else f"{int(elapsed_time // 60)}m {int(elapsed_time % 60)}s"
+                    stats_text = f"⚡ Speed: {current_query/elapsed_time:.1f} queries/sec • ⏱️ Elapsed: {elapsed_text} • 🎯 Found: {sum(len(category_results.get(d, [])) for d in category_results)} results"
+                    self.root.after(0, lambda st=stats_text: self.stats_label.config(text=st))
                     
                     # Perform search
                     search_results = self.scraper.search_google(dork, max_results)

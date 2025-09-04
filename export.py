@@ -3,9 +3,6 @@ Export Module - Enhanced with Professional Branding
 Handles exporting search results to PDF and CSV formats
 Now with company logos, customer info, and dad jokes!
 """
-Export Module
-Handles exporting search results to PDF and CSV formats
-"""
 
 import csv
 import json

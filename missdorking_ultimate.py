@@ -726,9 +726,14 @@ class MissDorkingUltimate:
             return
         
         domain = self.domain_var.get().strip()
+        print(f"DEBUG: Domain variable value: '{domain}'")  # Debug line
+        print(f"DEBUG: Domain length: {len(domain)}")  # Debug line
         if not domain:
+            print("DEBUG: Domain validation failed - empty domain")
             self.show_notification("Please enter a domain to scan! 🎯", "error")
             return
+        
+        print(f"DEBUG: Domain validation passed: {domain}")
         
         # Check categories
         if not any(var.get() for var in self.category_vars.values()):

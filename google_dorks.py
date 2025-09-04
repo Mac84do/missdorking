@@ -7,6 +7,7 @@ GOOGLE_DORKS = {
     "Document Files": [
         'site:{domain} (filetype:pdf OR filetype:doc OR filetype:docx OR filetype:xls OR filetype:xlsx OR filetype:ppt OR filetype:pptx)',
         'site:{domain} (filetype:txt OR filetype:rtf OR filetype:csv OR filetype:xml OR filetype:json)',
+        'site:{domain} (filetype:odt OR filetype:ods OR filetype:odp OR filetype:pages OR filetype:numbers OR filetype:keynote)',
     ],
     
     "Login & Admin Pages": [
@@ -76,6 +77,69 @@ GOOGLE_DORKS = {
         'site:{domain} ("amazonaws" OR "s3" OR "azure" OR "gcp" OR "digitalocean")',
         'site:{domain} ("api" OR "endpoint" OR "swagger" OR "graphql" OR "rest")',
         'site:{domain} ("docker" OR "kubernetes" OR "jenkins" OR "gitlab" OR "github")',
+    ],
+    
+    "Source Code Files": [
+        'site:{domain} (filetype:php OR filetype:asp OR filetype:aspx OR filetype:jsp OR filetype:js OR filetype:css)',
+        'site:{domain} (filetype:py OR filetype:rb OR filetype:pl OR filetype:sh OR filetype:bat OR filetype:ps1)',
+        'site:{domain} (filetype:java OR filetype:c OR filetype:cpp OR filetype:h OR filetype:cs OR filetype:vb)',
+        'site:{domain} (filetype:go OR filetype:rs OR filetype:swift OR filetype:kt OR filetype:scala OR filetype:clj)',
+    ],
+    
+    "Security & Certificates": [
+        'site:{domain} (filetype:pem OR filetype:key OR filetype:crt OR filetype:cer OR filetype:p12 OR filetype:pfx)',
+        'site:{domain} ("private key" OR "certificate" OR "ssl" OR "tls" OR "rsa" OR "dsa")',
+        'site:{domain} ("BEGIN PRIVATE KEY" OR "BEGIN CERTIFICATE" OR "BEGIN RSA PRIVATE KEY")',
+        'site:{domain} (filetype:asc OR filetype:gpg OR "BEGIN PGP" OR "ssh-rsa" OR "ssh-dss")',
+    ],
+    
+    "Development & Testing": [
+        'site:{domain} (inurl:test OR inurl:staging OR inurl:dev OR inurl:development OR inurl:beta)',
+        'site:{domain} ("TODO" OR "FIXME" OR "DEBUG" OR "HACK" OR "XXX" OR "BUG")',
+        'site:{domain} (filetype:env OR ".env" OR "environment" OR "local" OR "development")',
+        'site:{domain} (inurl:phpinfo OR "phpinfo()" OR "PHP Version" OR "Apache/" OR "Server Information")',
+    ],
+    
+    "Network & Infrastructure": [
+        'site:{domain} ("network" OR "subnet" OR "gateway" OR "dns" OR "dhcp" OR "vlan")',
+        'site:{domain} (filetype:pcap OR filetype:cap OR "wireshark" OR "tcpdump" OR "packet capture")',
+        'site:{domain} ("router" OR "switch" OR "firewall" OR "load balancer" OR "proxy")',
+        'site:{domain} ("ip address" OR "mac address" OR "port" OR "service" OR "protocol")',
+    ],
+    
+    "Email & Communications": [
+        'site:{domain} ("@" + "{domain}" OR "email" OR "contact" OR "support")',
+        'site:{domain} (filetype:eml OR filetype:msg OR filetype:pst OR filetype:ost)',
+        'site:{domain} ("smtp" OR "imap" OR "pop3" OR "exchange" OR "outlook")',
+        'site:{domain} ("phone" OR "fax" OR "address" OR "location" OR "office")',
+    ],
+    
+    "Passwords & Credentials": [
+        'site:{domain} ("password=" OR "pwd=" OR "pass=" OR "passwd=" OR "user=" OR "username=")',
+        'site:{domain} (filetype:kdb OR filetype:kdbx OR "keepass" OR "lastpass" OR "1password")',
+        'site:{domain} ("default password" OR "admin/admin" OR "admin/password" OR "root/root")',
+        'site:{domain} ("login:" OR "password:" OR "user:" OR "account:" OR "credentials")',
+    ],
+    
+    "Sensitive Documents": [
+        'site:{domain} ("confidential" OR "classified" OR "restricted" OR "internal" OR "proprietary")',
+        'site:{domain} ("contract" OR "agreement" OR "invoice" OR "receipt" OR "statement")',
+        'site:{domain} ("social security" OR "ssn" OR "tax" OR "financial" OR "bank")',
+        'site:{domain} ("medical" OR "patient" OR "health" OR "insurance" OR "personal")',
+    ],
+    
+    "Git & Version Control": [
+        'site:{domain} (inurl:".git" OR "git" OR "repository" OR "repo")',
+        'site:{domain} (filetype:gitignore OR ".gitignore" OR ".gitconfig" OR "git-credentials")',
+        'site:{domain} ("svn" OR "subversion" OR "mercurial" OR "bazaar" OR "cvs")',
+        'site:{domain} ("commit" OR "branch" OR "merge" OR "pull request" OR "diff")',
+    ],
+    
+    "Monitoring & Analytics": [
+        'site:{domain} ("analytics" OR "statistics" OR "metrics" OR "monitoring" OR "dashboard")',
+        'site:{domain} ("grafana" OR "kibana" OR "elasticsearch" OR "prometheus" OR "nagios")',
+        'site:{domain} ("splunk" OR "logstash" OR "fluentd" OR "graylog" OR "syslog")',
+        'site:{domain} ("google analytics" OR "gtag" OR "ga(" OR "_gaq" OR "gtm")',
     ]
 }
 

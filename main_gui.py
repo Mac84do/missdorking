@@ -11,6 +11,8 @@ from datetime import datetime
 import os
 import sys
 import webbrowser
+from PIL import Image, ImageTk, ImageDraw, ImageFont
+import io
 
 # Import our modules
 from google_dorks import get_all_dorks_for_domain, get_dork_count, GOOGLE_DORKS
@@ -62,168 +64,283 @@ class DorkingApp:
             ]
         )
     
+    def create_banner_image(self):
+        """Create a sleek banner image"""
+        try:
+            # Create a banner with gradient effect
+            width, height = 1200, 120
+            image = Image.new('RGB', (width, height), color='#0a0a0a')
+            draw = ImageDraw.Draw(image)
+            
+            # Create gradient background
+            for y in range(height):
+                alpha = int((y / height) * 255)
+                color = (0, min(255, alpha), min(255, int(alpha * 0.8)))
+                draw.line([(0, y), (width, y)], fill=color)
+            
+            # Add some futuristic elements
+            # Circuit pattern
+            for i in range(0, width, 100):
+                draw.rectangle([i, 20, i+50, 25], fill='#00ccff')
+                draw.rectangle([i+10, 95, i+60, 100], fill='#ff0099')
+            
+            # Convert to PhotoImage
+            photo = ImageTk.PhotoImage(image)
+            return photo
+        except Exception as e:
+            print(f"Could not create banner image: {e}")
+            return None
+    
     def setup_styles(self):
-        """Configure cyberpunk Matrix theme styles"""
+        """Configure sleek futuristic theme styles"""
         style = ttk.Style()
         
         # Set the theme to a dark style
         try:
-            # Use a dark theme if available
             style.theme_use('clam')
         except:
             pass
         
-        # Cyberpunk color scheme
-        MATRIX_GREEN = '#00FF41'    # Bright Matrix green
-        DARK_GREEN = '#00AA00'      # Darker green
-        CYBER_BLUE = '#00FFFF'      # Cyan
-        NEON_PINK = '#FF0080'       # Hot pink
-        BLACK_BG = '#000000'        # Pure black
-        DARK_GRAY = '#1a1a1a'       # Dark gray
-        DARKER_GRAY = '#0d0d0d'     # Darker gray
+        # Sleek futuristic color scheme
+        ELECTRIC_BLUE = '#00ccff'      # Primary accent
+        NEON_PINK = '#ff0099'          # Secondary accent 
+        CYBER_GREEN = '#00ff88'        # Success/active
+        LIGHT_GRAY = '#e0e0e0'         # Primary text
+        MED_GRAY = '#a0a0a0'           # Secondary text
+        DARK_GRAY = '#2a2a2a'          # Backgrounds
+        DARKER_GRAY = '#1a1a1a'        # Input backgrounds
+        BLACK_BG = '#0a0a0a'           # Main background
         
         # Configure main window background
         self.root.configure(bg=BLACK_BG)
         
-        # Configure ttk styles with cyberpunk theme
+        # Configure ttk styles with sleek futuristic theme
         style.configure('TLabel', 
-                       foreground=MATRIX_GREEN, 
+                       foreground=LIGHT_GRAY, 
                        background=BLACK_BG,
-                       font=('Consolas', 10, 'bold'))
+                       font=('Segoe UI', 10))
         
         style.configure('Title.TLabel', 
-                       foreground=CYBER_BLUE, 
+                       foreground=ELECTRIC_BLUE, 
                        background=BLACK_BG,
-                       font=('Consolas', 18, 'bold'))
+                       font=('Segoe UI Light', 24, 'bold'))
         
         style.configure('Header.TLabel', 
                        foreground=NEON_PINK, 
                        background=BLACK_BG,
-                       font=('Consolas', 14, 'bold'))
+                       font=('Segoe UI', 14, 'bold'))
+        
+        style.configure('Progress.TLabel', 
+                       foreground=CYBER_GREEN, 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 9))
+        
+        style.configure('Subtle.TLabel', 
+                       foreground=MED_GRAY, 
+                       background=BLACK_BG,
+                       font=('Segoe UI', 8))
         
         style.configure('TFrame', background=BLACK_BG)
+        
+        style.configure('Card.TFrame', 
+                       background=DARK_GRAY,
+                       relief='flat',
+                       borderwidth=1)
+        
         style.configure('TLabelFrame', 
-                       foreground=MATRIX_GREEN,
+                       foreground=ELECTRIC_BLUE,
                        background=BLACK_BG,
-                       bordercolor=MATRIX_GREEN,
-                       lightcolor=MATRIX_GREEN,
-                       darkcolor=DARK_GREEN)
+                       bordercolor=ELECTRIC_BLUE,
+                       lightcolor=ELECTRIC_BLUE,
+                       darkcolor=DARKER_GRAY,
+                       borderwidth=2,
+                       relief='solid')
         
         style.configure('TLabelFrame.Label', 
-                       foreground=MATRIX_GREEN,
+                       foreground=ELECTRIC_BLUE,
                        background=BLACK_BG,
-                       font=('Consolas', 10, 'bold'))
+                       font=('Segoe UI', 10, 'bold'))
         
-        # Entry field styling
+        # Entry field styling - sleek and modern
         style.configure('TEntry', 
-                       foreground=MATRIX_GREEN,
+                       foreground=LIGHT_GRAY,
                        fieldbackground=DARKER_GRAY,
-                       bordercolor=MATRIX_GREEN,
-                       insertcolor=MATRIX_GREEN,
-                       font=('Consolas', 10))
+                       bordercolor=ELECTRIC_BLUE,
+                       insertcolor=ELECTRIC_BLUE,
+                       selectbackground=ELECTRIC_BLUE,
+                       selectforeground=BLACK_BG,
+                       font=('Segoe UI', 10),
+                       relief='flat',
+                       borderwidth=2)
+        
+        style.map('TEntry',
+                 bordercolor=[('focus', CYBER_GREEN)],
+                 lightcolor=[('focus', CYBER_GREEN)])
         
         # Spinbox styling
         style.configure('TSpinbox', 
-                       foreground=MATRIX_GREEN,
+                       foreground=LIGHT_GRAY,
                        fieldbackground=DARKER_GRAY,
-                       bordercolor=MATRIX_GREEN,
-                       font=('Consolas', 9))
+                       bordercolor=ELECTRIC_BLUE,
+                       font=('Segoe UI', 9),
+                       relief='flat')
         
         # Combobox styling
         style.configure('TCombobox', 
-                       foreground=MATRIX_GREEN,
+                       foreground=LIGHT_GRAY,
                        fieldbackground=DARKER_GRAY,
-                       bordercolor=MATRIX_GREEN,
-                       font=('Consolas', 9))
+                       bordercolor=ELECTRIC_BLUE,
+                       font=('Segoe UI', 9),
+                       relief='flat')
         
-        # Button styles - Matrix theme
-        style.configure('Run.TButton', 
-                       foreground=BLACK_BG,
-                       background=MATRIX_GREEN,
-                       bordercolor=MATRIX_GREEN,
+        # Button styles - modern and sleek
+        style.configure('Primary.TButton', 
+                       foreground='white',
+                       background=ELECTRIC_BLUE,
+                       bordercolor=ELECTRIC_BLUE,
                        focuscolor='none',
-                       font=('Consolas', 11, 'bold'))
+                       font=('Segoe UI', 10, 'bold'),
+                       relief='flat',
+                       borderwidth=0,
+                       padding=(20, 10))
         
-        style.map('Run.TButton',
-                 background=[('active', DARK_GREEN),
-                           ('pressed', CYBER_BLUE)])
+        style.map('Primary.TButton',
+                 background=[('active', '#0099cc'),
+                           ('pressed', CYBER_GREEN)])
         
-        style.configure('Export.TButton', 
-                       foreground=BLACK_BG,
-                       background=CYBER_BLUE,
-                       bordercolor=CYBER_BLUE,
-                       focuscolor='none',
-                       font=('Consolas', 9, 'bold'))
-        
-        style.map('Export.TButton',
-                 background=[('active', '#00AAAA'),
-                           ('pressed', MATRIX_GREEN)])
-        
-        style.configure('Bulk.TButton', 
-                       foreground=BLACK_BG,
+        style.configure('Secondary.TButton', 
+                       foreground='white',
                        background=NEON_PINK,
                        bordercolor=NEON_PINK,
                        focuscolor='none',
-                       font=('Consolas', 12, 'bold'))
+                       font=('Segoe UI', 10, 'bold'),
+                       relief='flat',
+                       borderwidth=0,
+                       padding=(15, 8))
+        
+        style.map('Secondary.TButton',
+                 background=[('active', '#cc0077'),
+                           ('pressed', ELECTRIC_BLUE)])
+        
+        style.configure('Action.TButton', 
+                       foreground=BLACK_BG,
+                       background=CYBER_GREEN,
+                       bordercolor=CYBER_GREEN,
+                       focuscolor='none',
+                       font=('Segoe UI', 11, 'bold'),
+                       relief='flat',
+                       borderwidth=0,
+                       padding=(25, 12))
+        
+        style.map('Action.TButton',
+                 background=[('active', '#00cc66'),
+                           ('pressed', ELECTRIC_BLUE)])
+        
+        style.configure('Export.TButton', 
+                       foreground=LIGHT_GRAY,
+                       background=DARK_GRAY,
+                       bordercolor=MED_GRAY,
+                       focuscolor='none',
+                       font=('Segoe UI', 9, 'bold'),
+                       relief='flat',
+                       borderwidth=1,
+                       padding=(12, 6))
+        
+        style.map('Export.TButton',
+                 background=[('active', MED_GRAY),
+                           ('pressed', ELECTRIC_BLUE)],
+                 foreground=[('pressed', 'white')])
+        
+        style.configure('Bulk.TButton', 
+                       foreground='white',
+                       background=NEON_PINK,
+                       bordercolor=NEON_PINK,
+                       focuscolor='none',
+                       font=('Segoe UI', 12, 'bold'),
+                       relief='flat',
+                       borderwidth=0,
+                       padding=(30, 15))
         
         style.map('Bulk.TButton',
-                 background=[('active', '#CC0066'),
-                           ('pressed', MATRIX_GREEN)])
+                 background=[('active', '#cc0077'),
+                           ('pressed', CYBER_GREEN)])
         
-        # Progress bar - Matrix style
-        style.configure('Matrix.Horizontal.TProgressbar', 
-                       background=MATRIX_GREEN,
+        # Progress bar - modern sleek style
+        style.configure('Modern.Horizontal.TProgressbar', 
+                       background=CYBER_GREEN,
                        troughcolor=DARKER_GRAY,
-                       bordercolor=MATRIX_GREEN,
-                       lightcolor=MATRIX_GREEN,
-                       darkcolor=DARK_GREEN,
-                       thickness=25)
+                       bordercolor=ELECTRIC_BLUE,
+                       lightcolor=CYBER_GREEN,
+                       darkcolor=CYBER_GREEN,
+                       borderwidth=1,
+                       relief='flat')
         
         # Notebook (tabs) styling
         style.configure('TNotebook', 
                        background=BLACK_BG,
-                       bordercolor=MATRIX_GREEN)
+                       bordercolor=ELECTRIC_BLUE,
+                       tabmargins=[0, 5, 0, 0])
         
         style.configure('TNotebook.Tab', 
-                       foreground=MATRIX_GREEN,
-                       background=DARKER_GRAY,
-                       bordercolor=MATRIX_GREEN,
-                       font=('Consolas', 10, 'bold'))
+                       foreground=MED_GRAY,
+                       background=DARK_GRAY,
+                       bordercolor=ELECTRIC_BLUE,
+                       font=('Segoe UI', 10),
+                       padding=[20, 10],
+                       focuscolor='none')
         
         style.map('TNotebook.Tab',
                  background=[('selected', BLACK_BG),
-                           ('active', DARK_GRAY)],
-                 foreground=[('selected', CYBER_BLUE),
-                           ('active', MATRIX_GREEN)])
+                           ('active', DARKER_GRAY)],
+                 foreground=[('selected', ELECTRIC_BLUE),
+                           ('active', LIGHT_GRAY)])
         
         # Checkbutton styling
         style.configure('TCheckbutton', 
-                       foreground=MATRIX_GREEN,
+                       foreground=LIGHT_GRAY,
                        background=BLACK_BG,
                        focuscolor='none',
-                       font=('Consolas', 9))
+                       font=('Segoe UI', 9))
+        
+        style.map('TCheckbutton',
+                 foreground=[('active', ELECTRIC_BLUE)])
     
     def create_widgets(self):
-        """Create and layout all GUI widgets with tabbed interface"""
+        """Create and layout all GUI widgets with modern sleek design"""
         
         # Main container
-        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame = ttk.Frame(self.root, padding="0")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         main_frame.columnconfigure(0, weight=1)
-        main_frame.rowconfigure(1, weight=1)
+        main_frame.rowconfigure(2, weight=1)
         
-        # Cyberpunk Matrix title
-        title_label = ttk.Label(main_frame, text="⟨⟨ NEURAL DORKING INTERFACE v2.077 ⟩⟩", 
+        # Create and add banner
+        banner_image = self.create_banner_image()
+        if banner_image:
+            banner_label = tk.Label(main_frame, image=banner_image, bg='#0a0a0a')
+            banner_label.image = banner_image  # Keep a reference
+            banner_label.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=(0, 0))
+        
+        # Title with modern styling
+        title_frame = ttk.Frame(main_frame, padding="20")
+        title_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))
+        title_frame.columnconfigure(0, weight=1)
+        
+        title_label = ttk.Label(title_frame, text="MissDorking™ Professional", 
                                style='Title.TLabel')
-        title_label.grid(row=0, column=0, pady=(0, 20))
+        title_label.grid(row=0, column=0)
         
-        # Create notebook for tabs
+        subtitle_label = ttk.Label(title_frame, text="Advanced Google Dorking & Intelligence Platform", 
+                                 style='Subtle.TLabel')
+        subtitle_label.grid(row=1, column=0, pady=(5, 0))
+        
+        # Create notebook for tabs with modern styling
         self.notebook = ttk.Notebook(main_frame)
-        self.notebook.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.notebook.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=20, pady=(0, 20))
         
         # Create single domain tab
         self.create_single_domain_tab()
@@ -231,11 +348,14 @@ class DorkingApp:
         # Create bulk scanning tab
         self.create_bulk_scanning_tab()
         
-        # Status bar - Matrix style
-        self.status_var = tk.StringVar(value=f"» System online - {get_dork_count()} neural queries loaded")
-        status_bar = ttk.Label(main_frame, textvariable=self.status_var, 
-                              relief='sunken', font=('Consolas', 9))
-        status_bar.grid(row=2, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
+        # Modern status bar
+        status_frame = ttk.Frame(main_frame, style='Card.TFrame', padding="10")
+        status_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), padx=20, pady=(0, 20))
+        status_frame.columnconfigure(0, weight=1)
+        
+        self.status_var = tk.StringVar(value=f"Ready • {get_dork_count()} intelligence queries loaded • System online")
+        status_bar = ttk.Label(status_frame, textvariable=self.status_var, style='Subtle.TLabel')
+        status_bar.grid(row=0, column=0, sticky=tk.W)
     
     def create_single_domain_tab(self):
         """Create single domain scanning tab"""
@@ -256,8 +376,8 @@ class DorkingApp:
         self.domain_entry.bind('<Return>', self.on_enter_pressed)
         
         # Run button
-        self.run_button = ttk.Button(single_frame, text="Start Dorking", 
-                                    command=self.start_dorking, style='Run.TButton')
+        self.run_button = ttk.Button(single_frame, text="▶ Start Scan", 
+                                    command=self.start_dorking, style='Primary.TButton')
         self.run_button.grid(row=0, column=2, padx=(5, 0), pady=5)
         
         # Options frame
@@ -303,7 +423,7 @@ class DorkingApp:
         self.progress_label.grid(row=0, column=0, sticky=tk.W, pady=2)
         
         self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate',
-                                           style='Matrix.Horizontal.TProgressbar')
+                                           style='Modern.Horizontal.TProgressbar')
         self.progress_bar.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=5)
         
         # Results section
@@ -422,7 +542,7 @@ class DorkingApp:
         self.bulk_progress_label.grid(row=0, column=0, sticky=tk.W, pady=2)
         
         self.bulk_progress_bar = ttk.Progressbar(bulk_progress_frame, mode='determinate',
-                                               style='Matrix.Horizontal.TProgressbar')
+                                               style='Modern.Horizontal.TProgressbar')
         self.bulk_progress_bar.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=5)
         
         # Bulk results text area

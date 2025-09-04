@@ -18,6 +18,8 @@ from pathlib import Path
 from hybrid_scraper_fixed import HybridScraper
 from fast_bulk_scanner import FastBulkScanner
 from analysis import ResultAnalyzer
+from google_dorks import get_all_dorks_for_domain, GOOGLE_DORKS
+from scraper import GoogleScraper
 try:
     from export import ResultExporter
     EXPORT_AVAILABLE = True
@@ -46,6 +48,7 @@ class SuperFastDorkingGUI:
             delay_range=self.config['delay_range']
         )
         self.analyzer = ResultAnalyzer()
+        self.google_scraper = GoogleScraper(delay_range=self.config['delay_range'])
         
         # Initialize exporter if available
         if EXPORT_AVAILABLE:
@@ -412,65 +415,115 @@ class SuperFastDorkingGUI:
         scan_thread.start()
     
     def run_speed_demon_scan(self, domain):
-        """Run the super fast speed demon scan"""
+        """Run the super fast comprehensive pentest-style scan"""
         try:
-            self.update_status(f"🚀 LUDICROUS SPEED activated for {domain}!")
+            self.update_status(f"🚀 LUDICROUS SPEED activated for {domain}! Running COMPREHENSIVE scan!")
             
             all_results = {}
             total_time = 0
+            scan_start_time = time.time()
             
-            # Use our super optimized hybrid scraper
-            if self.turbo_mode_var.get():
-                start_time = time.time()
+            # Clean domain
+            domain = domain.replace('http://', '').replace('https://', '').replace('www.', '')
+            
+            # Get ALL dork categories for comprehensive scanning like a real pentest tool
+            all_dorks = get_all_dorks_for_domain(domain)
+            
+            # Calculate total queries for progress
+            total_queries = sum(len(dorks) for dorks in all_dorks.values())
+            current_query = 0
+            
+            self.update_status(f"💋 Starting COMPREHENSIVE scan with {total_queries} dork queries across {len(all_dorks)} categories!")
+            
+            # Run comprehensive Google dorking across ALL categories
+            for category, dorks in all_dorks.items():
+                if not self.is_scanning:
+                    break
                 
-                # Run multiple scans in parallel for even faster results!
-                with ThreadPoolExecutor(max_workers=4) as executor:
-                    futures = [
-                        executor.submit(self.hybrid_scraper.analyze_domain_directly, domain),
-                        executor.submit(self.hybrid_scraper._analyze_homepage, f"https://{domain}"),
-                        executor.submit(self.hybrid_scraper._check_common_login_paths, f"https://{domain}")
-                    ]
-                    
-                    combined_results = []
-                    for future in as_completed(futures):
+                self.update_status(f"🎯 Scanning {category} ({len(dorks)} queries)...")
+                category_results = {}
+                
+                # Use parallel processing for each category
+                if self.turbo_mode_var.get():
+                    # Super fast parallel execution
+                    with ThreadPoolExecutor(max_workers=min(self.config['max_workers'], len(dorks))) as executor:
+                        # Submit all queries in this category
+                        futures = {executor.submit(self.google_scraper.search_google, dork, 10): dork for dork in dorks}
+                        
+                        for future in as_completed(futures):
+                            if not self.is_scanning:
+                                break
+                                
+                            dork = futures[future]
+                            current_query += 1
+                            
+                            try:
+                                results = future.result()
+                                category_results[dork] = results
+                                
+                                # Live update with progress
+                                progress = (current_query / total_queries) * 100
+                                if self.fun_mode_var.get():
+                                    fun_progress = random.choice([
+                                        f"💥 [{current_query}/{total_queries}] Dorking like a BOSS! {progress:.0f}% complete! 🔥",
+                                        f"🚀 [{current_query}/{total_queries}] Speed demon at {progress:.0f}%! Unstoppable! 💅",
+                                        f"💋 [{current_query}/{total_queries}] {progress:.0f}% done - Looking fabulous! ✨"
+                                    ])
+                                    self.update_status(fun_progress)
+                                else:
+                                    self.update_status(f"[{current_query}/{total_queries}] Processing {category}: {len(results)} results")
+                                    
+                            except Exception as e:
+                                logging.error(f"Query failed: {dork} - {e}")
+                                category_results[dork] = []
+                else:
+                    # Sequential processing for better reliability
+                    for dork in dorks:
+                        if not self.is_scanning:
+                            break
+                            
+                        current_query += 1
                         try:
-                            result = future.result()
-                            if result:
-                                combined_results.extend(result)
+                            results = self.google_scraper.search_google(dork, 10)
+                            category_results[dork] = results
+                            
+                            progress = (current_query / total_queries) * 100
+                            self.update_status(f"[{current_query}/{total_queries}] {category}: {len(results)} results ({progress:.0f}%)")
+                            
                         except Exception as e:
-                            logging.error(f"Parallel scan failed: {e}")
+                            logging.error(f"Query failed: {dork} - {e}")
+                            category_results[dork] = []
                 
-                # Remove duplicates
-                unique_results = []
-                seen_urls = set()
-                for result in combined_results:
-                    if result['url'] not in seen_urls:
-                        unique_results.append(result)
-                        seen_urls.add(result['url'])
-                
-                if unique_results:
-                    all_results['Login & Admin Pages'] = {
-                        f'SPEED DEMON analysis of {domain}': unique_results
-                    }
-                
-                scan_time = time.time() - start_time
-                total_time += scan_time
-                
-                if self.fun_mode_var.get():
-                    self.update_status(f"💥 BOOM! Found {len(unique_results)} pages in {scan_time:.2f}s! That's what I call SPEED! 🔥")
+                if category_results:
+                    all_results[category] = category_results
+            
+            # Also include hybrid scraper results for login pages
+            if self.turbo_mode_var.get() and self.is_scanning:
+                self.update_status("🔥 Adding hybrid scraper analysis for extra thoroughness!")
+                try:
+                    hybrid_results = self.hybrid_scraper.analyze_domain_directly(domain)
+                    if hybrid_results:
+                        if 'Login & Admin Pages' not in all_results:
+                            all_results['Login & Admin Pages'] = {}
+                        all_results['Login & Admin Pages'][f'Hybrid analysis of {domain}'] = hybrid_results
+                except Exception as e:
+                    logging.error(f"Hybrid analysis failed: {e}")
+            
+            total_time = time.time() - scan_start_time
             
             # Analyze results super fast
             if all_results and self.is_scanning:
-                analyzed_results = self.analyze_super_fast(all_results)
+                self.update_status("🧠 Analyzing results with AI-powered intelligence...")
+                analyzed_results = self.analyze_comprehensive_results(all_results)
                 self.current_results = analyzed_results
-                self.display_super_results(analyzed_results, total_time, domain)
+                self.display_comprehensive_results(analyzed_results, total_time, domain)
             
             # Fun completion message
             if self.fun_mode_var.get() and self.is_scanning:
                 completion_msg = random.choice(self.completion_messages)
-                self.update_status(completion_msg)
+                self.update_status(f"{completion_msg} Scanned {current_query} queries in {total_time:.1f}s!")
             else:
-                self.update_status(f"✅ Speed demon scan completed in {total_time:.2f}s")
+                self.update_status(f"✅ Comprehensive scan completed: {current_query} queries in {total_time:.1f}s")
                 
         except Exception as e:
             self.update_status(f"❌ Speed demon crashed: {str(e)}")
@@ -479,6 +532,173 @@ class SuperFastDorkingGUI:
         finally:
             self.master.after(0, self.reset_scan_ui)
     
+    def analyze_comprehensive_results(self, raw_results):
+        """Comprehensive analysis of all dork categories"""
+        analyzed_results = {}
+        all_findings = []
+        total_unique_results = 0
+        category_stats = {}
+        
+        for category, category_results in raw_results.items():
+            analyzed_category = {}
+            category_count = 0
+            
+            for query, results in category_results.items():
+                analyzed_query_results = []
+                
+                # Process in batches for speed
+                batch_size = 10
+                for i in range(0, len(results), batch_size):
+                    batch = results[i:i+batch_size]
+                    
+                    with ThreadPoolExecutor(max_workers=4) as executor:
+                        futures = [executor.submit(self.analyzer.analyze_result, result.copy()) for result in batch]
+                        
+                        for future in as_completed(futures):
+                            try:
+                                analyzed_result = future.result()
+                                analyzed_query_results.append(analyzed_result)
+                                all_findings.append(analyzed_result)
+                                category_count += 1
+                            except Exception as e:
+                                logging.error(f"Analysis failed: {e}")
+                
+                analyzed_category[query] = analyzed_query_results
+                total_unique_results += len(results)
+            
+            analyzed_results[category] = analyzed_category
+            category_stats[category] = category_count
+        
+        # Advanced analysis
+        login_pages = [f for f in all_findings if 'login_page' in f.get('analysis', {}).get('categories', [])]
+        high_risk = [f for f in all_findings if f.get('analysis', {}).get('risk_level') == 'high']
+        sensitive_files = [f for f in all_findings if 'sensitive_file' in f.get('analysis', {}).get('categories', [])]
+        
+        # Add comprehensive summary
+        analyzed_results['_summary'] = {
+            'total_unique_results': total_unique_results,
+            'total_findings': len(all_findings),
+            'categories_scanned': len(raw_results),
+            'login_pages_count': len(login_pages),
+            'sensitive_files_count': len(sensitive_files),
+            'high_risk_count': len(high_risk),
+            'category_breakdown': category_stats,
+            'login_pages': login_pages,
+            'sensitive_files': sensitive_files,
+            'high_risk_findings': high_risk
+        }
+        
+        return analyzed_results
+
+    def display_comprehensive_results(self, results, scan_time, domain):
+        """Display comprehensive pentest-style results"""
+        self.results_text.delete(1.0, tk.END)
+        
+        summary = results.get('_summary', {})
+        
+        # Comprehensive pentest-style header
+        header = f"""🚀 COMPREHENSIVE PENTEST SCAN RESULTS 💋
+{'='*70}
+Target Domain: {domain}
+Scan Duration: {scan_time:.1f} seconds ⚡
+Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Categories Scanned: {summary.get('categories_scanned', 0)}
+{'='*70}
+
+📊 EXECUTIVE SUMMARY:
+💥 Total Results Found: {summary.get('total_unique_results', 0)}
+🔍 Total Findings Analyzed: {summary.get('total_findings', 0)}
+🎯 Login Pages Discovered: {summary.get('login_pages_count', 0)}
+📁 Sensitive Files Found: {summary.get('sensitive_files_count', 0)}
+🔥 High Risk Findings: {summary.get('high_risk_count', 0)}
+
+"""
+        self.results_text.insert(tk.END, header)
+        
+        # Category breakdown
+        category_breakdown = summary.get('category_breakdown', {})
+        if category_breakdown:
+            self.results_text.insert(tk.END, "📋 CATEGORY BREAKDOWN:\n")
+            self.results_text.insert(tk.END, "=" * 40 + "\n")
+            for category, count in category_breakdown.items():
+                emoji = self.get_category_emoji(category)
+                self.results_text.insert(tk.END, f"{emoji} {category}: {count} findings\n")
+            self.results_text.insert(tk.END, "\n")
+        
+        # High-priority findings
+        high_risk = summary.get('high_risk_findings', [])
+        if high_risk:
+            self.results_text.insert(tk.END, "🚨 HIGH RISK FINDINGS:\n")
+            self.results_text.insert(tk.END, "=" * 40 + "\n")
+            for i, finding in enumerate(high_risk[:10], 1):  # Show top 10
+                self.results_text.insert(tk.END, f"\n{i}. 🔴 {finding.get('title', 'Unknown')}\n")
+                self.results_text.insert(tk.END, f"   🌐 {finding.get('url', '')}\n")
+                reasoning = finding.get('analysis', {}).get('reasoning', '')
+                if reasoning:
+                    self.results_text.insert(tk.END, f"   ⚠️ Risk: {reasoning}\n")
+            self.results_text.insert(tk.END, "\n")
+        
+        # Login pages section
+        login_pages = summary.get('login_pages', [])
+        if login_pages:
+            self.results_text.insert(tk.END, "🎯 LOGIN & ADMIN PAGES:\n")
+            self.results_text.insert(tk.END, "=" * 40 + "\n")
+            for i, page in enumerate(login_pages[:15], 1):  # Show top 15
+                risk = page.get('analysis', {}).get('risk_level', 'unknown')
+                risk_emoji = "🔴" if risk == 'high' else "🟡" if risk == 'medium' else "🟢"
+                self.results_text.insert(tk.END, f"\n{i}. {risk_emoji} {page.get('title', 'Login Page')}\n")
+                self.results_text.insert(tk.END, f"   🌐 {page.get('url', '')}\n")
+            self.results_text.insert(tk.END, "\n")
+        
+        # Sensitive files section
+        sensitive_files = summary.get('sensitive_files', [])
+        if sensitive_files:
+            self.results_text.insert(tk.END, "📁 SENSITIVE FILES:\n")
+            self.results_text.insert(tk.END, "=" * 40 + "\n")
+            for i, file in enumerate(sensitive_files[:10], 1):  # Show top 10
+                self.results_text.insert(tk.END, f"\n{i}. 📄 {file.get('title', 'Sensitive File')}\n")
+                self.results_text.insert(tk.END, f"   🌐 {file.get('url', '')}\n")
+            self.results_text.insert(tk.END, "\n")
+        
+        # Fun pentest completion message
+        if self.fun_mode_var.get():
+            completion_emojis = ["🚀", "💋", "🔥", "👑", "💎", "⚡"]
+            fun_footer = f"""
+{'='*70}
+{random.choice(completion_emojis)} COMPREHENSIVE PENTEST SCAN COMPLETE! {random.choice(completion_emojis)}
+{random.choice(self.completion_messages)}
+
+🏆 PENTEST PERFORMANCE:
+- Categories Scanned: {summary.get('categories_scanned', 0)}/11 (100% coverage!)
+- Speed: LUDICROUS ⚡ ({scan_time:.1f}s total)
+- Findings Quality: PROFESSIONAL 💼
+- Style Points: MAXIMUM SASS 💅
+- Pentest Completeness: COMPREHENSIVE 🎯
+
+💋 This scan would make any penetration tester proud! 😘
+MissDorking™ - Making pentests fabulous since forever! ✨
+{'='*70}
+"""
+            self.results_text.insert(tk.END, fun_footer)
+    
+    def get_category_emoji(self, category):
+        """Get emoji for each category"""
+        emoji_map = {
+            'Document Files': '📄',
+            'Login & Admin Pages': '🎯',
+            'Configuration Files': '⚙️',
+            'Error & Debug Info': '⚠️',
+            'Database Files': '🗄️',
+            'Directory Listings': '📂',
+            'Vulnerable Parameters': '💉',
+            'Technology Stack': '🔧',
+            'Backup & Temp Files': '💾',
+            'Sensitive Info': '🔐',
+            'Log Files': '📋',
+            'Cloud & API Info': '☁️'
+        }
+        return emoji_map.get(category, '🔍')
+
     def analyze_super_fast(self, raw_results):
         """Super fast analysis of results"""
         analyzed_results = {}

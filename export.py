@@ -14,6 +14,8 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 import os
+import tempfile
+import uuid
 from PIL import Image as PILImage
 
 # Import our new modules
@@ -315,22 +317,29 @@ class ResultExporter:
             company_logo_path = company_info.get('logo_path')
             if company_logo_path and os.path.exists(company_logo_path):
                 try:
-                    # Resize company logo
-                    img = PILImage.open(company_logo_path)
-                    img.thumbnail((100, 60), PILImage.Resampling.LANCZOS)
-                    temp_logo_path = f"temp_company_logo_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-                    img.save(temp_logo_path)
-                    
-                    company_logo = Image(temp_logo_path, width=80, height=48)
-                    company_cell_content.append(company_logo)
-                    
-                    # Clean up temp file after use
-                    try:
-                        os.remove(temp_logo_path)
-                    except:
-                        pass
+                    # Check if we have read permissions for the logo file
+                    if not os.access(company_logo_path, os.R_OK):
+                        print(f"No read permission for company logo: {company_logo_path}")
+                    else:
+                        # Resize company logo using temp directory
+                        img = PILImage.open(company_logo_path)
+                        img.thumbnail((100, 60), PILImage.Resampling.LANCZOS)
+                        
+                        # Use system temp directory with unique filename
+                        temp_dir = tempfile.gettempdir()
+                        temp_filename = f"company_logo_{uuid.uuid4().hex[:8]}.png"
+                        temp_logo_path = os.path.join(temp_dir, temp_filename)
+                        
+                        img.save(temp_logo_path)
+                        
+                        company_logo = Image(temp_logo_path, width=80, height=48)
+                        company_cell_content.append(company_logo)
+                        
+                        # Schedule temp file cleanup (don't do it immediately)
+                        # The file will be cleaned up when temp directory is cleaned
                 except Exception as e:
                     print(f"Error processing company logo: {e}")
+                    # Continue without logo rather than failing
             
             # Company info text
             company_text = f"""
@@ -351,21 +360,28 @@ class ResultExporter:
                     customer_logo_path = customer.get('logo_path')
                     if customer_logo_path and os.path.exists(customer_logo_path):
                         try:
-                            img = PILImage.open(customer_logo_path)
-                            img.thumbnail((80, 48), PILImage.Resampling.LANCZOS)
-                            temp_customer_logo_path = f"temp_customer_logo_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-                            img.save(temp_customer_logo_path)
-                            
-                            customer_logo = Image(temp_customer_logo_path, width=60, height=36)
-                            customer_cell_content.append(customer_logo)
-                            
-                            # Clean up temp file
-                            try:
-                                os.remove(temp_customer_logo_path)
-                            except:
-                                pass
+                            # Check if we have read permissions for the logo file
+                            if not os.access(customer_logo_path, os.R_OK):
+                                print(f"No read permission for customer logo: {customer_logo_path}")
+                            else:
+                                img = PILImage.open(customer_logo_path)
+                                img.thumbnail((80, 48), PILImage.Resampling.LANCZOS)
+                                
+                                # Use system temp directory with unique filename
+                                temp_dir = tempfile.gettempdir()
+                                temp_filename = f"customer_logo_{uuid.uuid4().hex[:8]}.png"
+                                temp_customer_logo_path = os.path.join(temp_dir, temp_filename)
+                                
+                                img.save(temp_customer_logo_path)
+                                
+                                customer_logo = Image(temp_customer_logo_path, width=60, height=36)
+                                customer_cell_content.append(customer_logo)
+                                
+                                # Schedule temp file cleanup (don't do it immediately)
+                                # The file will be cleaned up when temp directory is cleaned
                         except Exception as e:
                             print(f"Error processing customer logo: {e}")
+                            # Continue without logo rather than failing
                     
                     # Customer info text
                     customer_text = f"""

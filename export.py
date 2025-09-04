@@ -221,9 +221,9 @@ class ResultExporter:
         
         summary_text = f"""
         <b>Summary:</b><br/>
-        • Total categories: {len(results)}<br/>
-        • Total queries executed: {total_queries}<br/>
-        • Total results found: {total_results}<br/>
+        - Total categories: {len(results)}<br/>
+        - Total queries executed: {total_queries}<br/>
+        - Total results found: {total_results}<br/>
         """
         story.append(Paragraph(summary_text, self.normal_style))
         story.append(Spacer(1, 20))

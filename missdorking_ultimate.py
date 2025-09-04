@@ -725,15 +725,28 @@ class MissDorkingUltimate:
             self.show_notification("Scan already in progress! 🚀", "info")
             return
         
-        domain = self.domain_var.get().strip()
-        print(f"DEBUG: Domain variable value: '{domain}'")  # Debug line
-        print(f"DEBUG: Domain length: {len(domain)}")  # Debug line
+        # Try to get domain from both the variable and directly from the entry widget
+        domain_from_var = self.domain_var.get().strip()
+        domain_from_entry = self.domain_entry.get().strip()
+        
+        print(f"DEBUG: Domain from variable: '{domain_from_var}'")
+        print(f"DEBUG: Domain from entry widget: '{domain_from_entry}'")
+        
+        # Use whichever one has content
+        domain = domain_from_entry if domain_from_entry else domain_from_var
+        
+        print(f"DEBUG: Final domain value: '{domain}'")  
+        print(f"DEBUG: Final domain length: {len(domain)}")
+        
         if not domain:
             print("DEBUG: Domain validation failed - empty domain")
             self.show_notification("Please enter a domain to scan! 🎯", "error")
             return
         
         print(f"DEBUG: Domain validation passed: {domain}")
+        
+        # Update the variable with the correct value
+        self.domain_var.set(domain)
         
         # Check categories
         if not any(var.get() for var in self.category_vars.values()):

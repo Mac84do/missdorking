@@ -304,26 +304,31 @@ class MissDorkingUltimate:
         self.create_enhanced_categories(options_frame)
     
     def create_enhanced_categories(self, parent):
-        """Enhanced category selection"""
+        """Enhanced category selection with improved visibility"""
         cat_frame = ttk.LabelFrame(parent, text="🎯 Intelligence Categories", padding="10")
         cat_frame.grid(row=1, column=0, columnspan=4, sticky=(tk.W, tk.E), pady=(10, 0))
         cat_frame.columnconfigure(0, weight=1)
         
-        # Select all / none buttons
+        # Select all / none buttons with improved styling
         button_frame = ttk.Frame(cat_frame)
         button_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
         
-        ttk.Button(button_frame, text="✅ Select All", 
-                  command=self.select_all_categories, style='Utility.TButton').pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(button_frame, text="❌ Clear All", 
-                  command=self.clear_all_categories, style='Utility.TButton').pack(side=tk.LEFT, padx=(0, 5))
+        select_all_btn = ttk.Button(button_frame, text="✅ Select All", 
+                                  command=self.select_all_categories, style='Action.TButton')
+        select_all_btn.pack(side=tk.LEFT, padx=(0, 5))
         
-        # Categories with counts
+        clear_all_btn = ttk.Button(button_frame, text="❌ Clear All", 
+                                 command=self.clear_all_categories, style='Secondary.TButton')
+        clear_all_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
+        # Categories with enhanced styling and visibility
         categories_frame = ttk.Frame(cat_frame)
         categories_frame.grid(row=1, column=0, sticky=(tk.W, tk.E))
         
         self.category_vars = {}
+        self.category_checkboxes = {}  # Store checkbox references for styling
         row, col = 0, 0
+        
         for category in GOOGLE_DORKS.keys():
             var = tk.BooleanVar(value=True)
             self.category_vars[category] = var
@@ -331,8 +336,26 @@ class MissDorkingUltimate:
             dork_count = len(GOOGLE_DORKS[category])
             text = f"{category} ({dork_count})"
             
-            checkbox = ttk.Checkbutton(categories_frame, text=text, variable=var)
-            checkbox.grid(row=row, column=col, sticky=tk.W, padx=(0, 20), pady=2)
+            # Create enhanced checkbox with custom styling
+            checkbox = tk.Checkbutton(
+                categories_frame, 
+                text=text, 
+                variable=var,
+                bg='#0a0a0a',
+                fg='#00FF88',  # Matrix green when selected
+                selectcolor='#0a0a0a',
+                activebackground='#1a1a1a',
+                activeforeground='#00FFFF',
+                font=('Segoe UI', 10, 'bold'),
+                command=lambda c=category: self.update_checkbox_color(c)
+            )
+            checkbox.grid(row=row, column=col, sticky=tk.W, padx=(0, 20), pady=4)
+            
+            # Store checkbox reference
+            self.category_checkboxes[category] = checkbox
+            
+            # Set initial color
+            self.update_checkbox_color(category)
             
             col += 1
             if col >= 3:
@@ -704,15 +727,36 @@ class MissDorkingUltimate:
         
         ttk.Button(dialog, text="Save Customer", command=save_customer).pack(pady=20)
     
+    def update_checkbox_color(self, category):
+        """Update checkbox color based on selection state"""
+        if category in self.category_checkboxes:
+            checkbox = self.category_checkboxes[category]
+            is_selected = self.category_vars[category].get()
+            
+            if is_selected:
+                # Matrix green when selected
+                checkbox.config(fg='#00FF88', activeforeground='#00FFFF')
+            else:
+                # Neon red when not selected
+                checkbox.config(fg='#FF1493', activeforeground='#FF69B4')
+    
     def select_all_categories(self):
-        """Select all categories"""
-        for var in self.category_vars.values():
+        """Select all categories with visual feedback"""
+        for category, var in self.category_vars.items():
             var.set(True)
+            self.update_checkbox_color(category)
+        
+        # Show feedback
+        self.progress_var.set("✅ All categories selected - Ready for maximum intel!")
     
     def clear_all_categories(self):
-        """Clear all categories"""
-        for var in self.category_vars.values():
+        """Clear all categories with visual feedback"""
+        for category, var in self.category_vars.items():
             var.set(False)
+            self.update_checkbox_color(category)
+        
+        # Show feedback
+        self.progress_var.set("❌ All categories cleared - Select categories to scan!")
     
     def on_enter_pressed(self, event):
         """Handle Enter key in domain entry"""

@@ -1,0 +1,576 @@
+"""
+RECON-OPS v2.0 - Tactical Intelligence Gathering System
+========================================================
+Advanced Google Dork Query Generator for Intelligence Operations
+No scanning - Pure query generation for manual HUMINT/SIGINT operations
+
+Author: Tactical Operations Team
+Classification: UNCLASSIFIED
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog, scrolledtext
+from datetime import datetime
+import pyperclip
+import os
+import sys
+import webbrowser
+import urllib.parse
+try:
+    from PIL import Image, ImageTk, ImageDraw, ImageFont
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+import json
+
+# Import our dorks module
+from google_dorks import GOOGLE_DORKS, get_dork_count
+
+class ReconOpsApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("RECON-OPS v2.0 - Tactical Intelligence Platform")
+        self.root.geometry("1400x900")
+        self.root.configure(bg='#0a0a0a')
+        
+        # Military color scheme
+        self.colors = {
+            'bg_primary': '#0a0a0a',      # Deep black
+            'bg_secondary': '#1a1a1a',    # Dark gray
+            'bg_tertiary': '#2a2a2a',     # Medium gray
+            'accent_green': '#00ff41',    # Matrix green
+            'accent_amber': '#ffb000',    # Tactical amber
+            'accent_red': '#ff2600',      # Danger red
+            'text_primary': '#00ff41',    # Matrix green text
+            'text_secondary': '#cccccc',  # Light gray text
+            'text_subtle': '#888888',     # Subtle gray
+            'border': '#444444'           # Border gray
+        }
+        
+        # Application state
+        self.target_domain = tk.StringVar()
+        self.generated_queries = {}
+        self.category_vars = {}
+        
+        # Initialize UI
+        self.setup_styles()
+        self.create_widgets()
+        
+        # Focus on domain entry
+        self.domain_entry.focus()
+
+    def setup_styles(self):
+        """Configure military-grade tactical styling"""
+        style = ttk.Style()
+        style.theme_use('clam')
+        
+        # Configure main styles with military theme
+        style.configure('Military.TLabel',
+                       foreground=self.colors['text_primary'],
+                       background=self.colors['bg_primary'],
+                       font=('Consolas', 10, 'bold'))
+        
+        style.configure('Header.TLabel',
+                       foreground=self.colors['accent_amber'],
+                       background=self.colors['bg_primary'],
+                       font=('Consolas', 16, 'bold'))
+        
+        style.configure('Title.TLabel',
+                       foreground=self.colors['text_primary'],
+                       background=self.colors['bg_primary'],
+                       font=('Consolas', 24, 'bold'))
+        
+        style.configure('Subtitle.TLabel',
+                       foreground=self.colors['text_subtle'],
+                       background=self.colors['bg_primary'],
+                       font=('Consolas', 10))
+        
+        style.configure('Status.TLabel',
+                       foreground=self.colors['accent_amber'],
+                       background=self.colors['bg_secondary'],
+                       font=('Consolas', 9, 'bold'))
+        
+        # Frame styling
+        style.configure('Military.TFrame',
+                       background=self.colors['bg_primary'],
+                       relief='flat',
+                       borderwidth=0)
+        
+        style.configure('Panel.TFrame',
+                       background=self.colors['bg_secondary'],
+                       relief='solid',
+                       borderwidth=1,
+                       bordercolor=self.colors['border'])
+        
+        style.configure('TLabelFrame',
+                       foreground=self.colors['accent_green'],
+                       background=self.colors['bg_primary'],
+                       bordercolor=self.colors['accent_green'],
+                       font=('Consolas', 10, 'bold'))
+        
+        style.configure('TLabelFrame.Label',
+                       foreground=self.colors['accent_green'],
+                       background=self.colors['bg_primary'],
+                       font=('Consolas', 10, 'bold'))
+        
+        # Entry styling
+        style.configure('Military.TEntry',
+                       foreground=self.colors['text_primary'],
+                       fieldbackground=self.colors['bg_secondary'],
+                       bordercolor=self.colors['accent_green'],
+                       insertcolor=self.colors['accent_green'],
+                       selectbackground=self.colors['accent_green'],
+                       selectforeground=self.colors['bg_primary'],
+                       font=('Consolas', 12, 'bold'),
+                       relief='solid',
+                       borderwidth=2)
+        
+        # Button styling - Tactical operations
+        style.configure('Tactical.TButton',
+                       foreground=self.colors['bg_primary'],
+                       background=self.colors['accent_green'],
+                       bordercolor=self.colors['accent_green'],
+                       focuscolor='none',
+                       font=('Consolas', 12, 'bold'),
+                       relief='flat',
+                       borderwidth=0,
+                       padding=(20, 10))
+        
+        style.map('Tactical.TButton',
+                 background=[('active', '#00cc33'),
+                           ('pressed', self.colors['accent_amber'])])
+        
+        style.configure('Command.TButton',
+                       foreground=self.colors['bg_primary'],
+                       background=self.colors['accent_amber'],
+                       bordercolor=self.colors['accent_amber'],
+                       focuscolor='none',
+                       font=('Consolas', 10, 'bold'),
+                       relief='flat',
+                       borderwidth=0,
+                       padding=(15, 8))
+        
+        style.map('Command.TButton',
+                 background=[('active', '#cc8800'),
+                           ('pressed', self.colors['accent_green'])])
+        
+        style.configure('Danger.TButton',
+                       foreground='white',
+                       background=self.colors['accent_red'],
+                       bordercolor=self.colors['accent_red'],
+                       focuscolor='none',
+                       font=('Consolas', 10, 'bold'),
+                       relief='flat',
+                       borderwidth=0,
+                       padding=(15, 8))
+        
+        # Checkbox styling
+        style.configure('Military.TCheckbutton',
+                       foreground=self.colors['text_secondary'],
+                       background=self.colors['bg_primary'],
+                       focuscolor='none',
+                       font=('Consolas', 9))
+        
+        style.map('Military.TCheckbutton',
+                 foreground=[('active', self.colors['accent_green'])])
+
+    def create_banner(self, parent):
+        """Create tactical ASCII-style banner"""
+        banner_frame = ttk.Frame(parent, style='Military.TFrame')
+        banner_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        banner_text = """
+╦═╗╔═╗╔═╗╔═╗╔╗╔  ╔═╗╔═╗╔═╗   ╦  ╦╔═╗  ╔═╗
+╠╦╝╠═ ║  ║ ║║║║  ║ ║╠═╝╚═╗   ╚╗╔╝╔═╝  ║ ║
+╩╚═╚═╝╚═╝╚═╝╝╚╝  ╚═╝╩  ╚═╝    ╚╝ ╚═╝  ╚═╝
+
+TACTICAL INTELLIGENCE GATHERING SYSTEM
+========================================
+        """
+        
+        banner_label = tk.Label(banner_frame, 
+                               text=banner_text,
+                               foreground=self.colors['accent_green'],
+                               background=self.colors['bg_primary'],
+                               font=('Consolas', 8, 'bold'),
+                               justify=tk.CENTER)
+        banner_label.pack()
+        
+        subtitle = tk.Label(banner_frame,
+                           text="[ GOOGLE DORK QUERY GENERATOR - NO ACTIVE SCANNING ]",
+                           foreground=self.colors['accent_amber'],
+                           background=self.colors['bg_primary'],
+                           font=('Consolas', 10, 'bold'))
+        subtitle.pack(pady=(5, 0))
+
+    def create_widgets(self):
+        """Create main application interface"""
+        # Main container
+        main_frame = ttk.Frame(self.root, style='Military.TFrame', padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Banner
+        self.create_banner(main_frame)
+        
+        # Mission briefing
+        brief_frame = ttk.LabelFrame(main_frame, text="[ MISSION BRIEFING ]", 
+                                   padding="15")
+        brief_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        brief_text = ("OBJECTIVE: Generate tactical Google dork queries for manual intelligence gathering operations.\n"
+                     "METHOD: Input target domain, select intelligence categories, execute generated queries manually.\n"
+                     "ADVANTAGE: Zero network exposure, complete operational security, 100% manual control.")
+        
+        brief_label = tk.Label(brief_frame,
+                              text=brief_text,
+                              foreground=self.colors['text_secondary'],
+                              background=self.colors['bg_primary'],
+                              font=('Consolas', 9),
+                              justify=tk.LEFT,
+                              wraplength=1200)
+        brief_label.pack(anchor=tk.W)
+        
+        # Target acquisition
+        target_frame = ttk.LabelFrame(main_frame, text="[ TARGET ACQUISITION ]",
+                                    padding="15")
+        target_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        target_input_frame = ttk.Frame(target_frame, style='Military.TFrame')
+        target_input_frame.pack(fill=tk.X)
+        
+        ttk.Label(target_input_frame, text="TARGET DOMAIN:",
+                 style='Military.TLabel').pack(side=tk.LEFT, padx=(0, 10))
+        
+        self.domain_entry = ttk.Entry(target_input_frame, 
+                                     textvariable=self.target_domain,
+                                     style='Military.TEntry',
+                                     width=50)
+        self.domain_entry.pack(side=tk.LEFT, padx=(0, 20), fill=tk.X, expand=True)
+        self.domain_entry.bind('<Return>', self.generate_queries)
+        
+        self.generate_btn = ttk.Button(target_input_frame, 
+                                     text="⚡ GENERATE INTEL QUERIES",
+                                     command=self.generate_queries,
+                                     style='Tactical.TButton')
+        self.generate_btn.pack(side=tk.RIGHT)
+        
+        # Intel categories selection
+        categories_frame = ttk.LabelFrame(main_frame, text="[ INTELLIGENCE CATEGORIES ]",
+                                        padding="15")
+        categories_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        # Create category checkboxes
+        self.create_category_selection(categories_frame)
+        
+        # Generated queries display
+        queries_frame = ttk.LabelFrame(main_frame, text="[ GENERATED TACTICAL QUERIES ]",
+                                     padding="15")
+        queries_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
+        
+        # Queries text area with military styling
+        self.queries_text = scrolledtext.ScrolledText(
+            queries_frame,
+            height=20,
+            width=100,
+            font=('Consolas', 9),
+            bg=self.colors['bg_secondary'],
+            fg=self.colors['text_primary'],
+            insertbackground=self.colors['accent_green'],
+            selectbackground=self.colors['accent_green'],
+            selectforeground=self.colors['bg_primary'],
+            relief='solid',
+            borderwidth=2
+        )
+        self.queries_text.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        
+        # Command buttons
+        command_frame = ttk.Frame(queries_frame, style='Military.TFrame')
+        command_frame.pack(fill=tk.X)
+        
+        ttk.Button(command_frame, text="📋 COPY ALL QUERIES",
+                  command=self.copy_all_queries, style='Command.TButton').pack(side=tk.LEFT, padx=(0, 10))
+        
+        ttk.Button(command_frame, text="💾 EXPORT QUERIES",
+                  command=self.export_queries, style='Command.TButton').pack(side=tk.LEFT, padx=(0, 10))
+        
+        ttk.Button(command_frame, text="🌐 OPEN IN BROWSER",
+                  command=self.open_queries_in_browser, style='Command.TButton').pack(side=tk.LEFT, padx=(0, 10))
+        
+        ttk.Button(command_frame, text="🗑️ CLEAR INTEL",
+                  command=self.clear_queries, style='Danger.TButton').pack(side=tk.LEFT, padx=(0, 10))
+        
+        # Status bar
+        status_frame = ttk.Frame(main_frame, style='Panel.TFrame', padding="10")
+        status_frame.pack(fill=tk.X)
+        
+        self.status_var = tk.StringVar(value=f"⚡ SYSTEM READY | {get_dork_count()} TACTICAL QUERIES LOADED | AWAITING TARGET")
+        status_label = ttk.Label(status_frame, textvariable=self.status_var, style='Status.TLabel')
+        status_label.pack(side=tk.LEFT)
+        
+        # Mission time and donation
+        right_status_frame = ttk.Frame(status_frame, style='Panel.TFrame')
+        right_status_frame.pack(side=tk.RIGHT)
+        
+        # Donation link (clickable)
+        donate_label = ttk.Label(right_status_frame, 
+                               text="☕ Support: ko-fi.com/macedo84",
+                               style='Status.TLabel',
+                               cursor='hand2')
+        donate_label.pack(side=tk.RIGHT, padx=(0, 20))
+        donate_label.bind('<Button-1>', lambda e: webbrowser.open('https://ko-fi.com/macedo84'))
+        
+        time_label = ttk.Label(right_status_frame, 
+                             text=f"MISSION TIME: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                             style='Status.TLabel')
+        time_label.pack(side=tk.RIGHT)
+
+    def create_category_selection(self, parent):
+        """Create intelligence category selection checkboxes"""
+        # Select all/none buttons
+        select_frame = ttk.Frame(parent, style='Military.TFrame')
+        select_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Button(select_frame, text="✓ SELECT ALL", 
+                  command=self.select_all_categories, style='Command.TButton').pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(select_frame, text="✗ CLEAR ALL", 
+                  command=self.clear_all_categories, style='Command.TButton').pack(side=tk.LEFT)
+        
+        # Category grid
+        categories_grid = ttk.Frame(parent, style='Military.TFrame')
+        categories_grid.pack(fill=tk.X)
+        
+        # Create checkboxes for each category
+        row = 0
+        col = 0
+        max_cols = 4
+        
+        for category in GOOGLE_DORKS.keys():
+            var = tk.BooleanVar(value=True)  # All selected by default
+            self.category_vars[category] = var
+            
+            # Create checkbox with military styling
+            cb = ttk.Checkbutton(categories_grid, 
+                               text=f"⚡ {category}",
+                               variable=var,
+                               style='Military.TCheckbutton')
+            cb.grid(row=row, column=col, sticky=tk.W, padx=(0, 30), pady=5)
+            
+            col += 1
+            if col >= max_cols:
+                col = 0
+                row += 1
+
+    def generate_queries(self, event=None):
+        """Generate Google dork queries for the target domain"""
+        domain = self.target_domain.get().strip()
+        
+        if not domain:
+            messagebox.showerror("ERROR", "Target domain required for intelligence operation.")
+            return
+        
+        # Clean domain
+        domain = domain.replace('http://', '').replace('https://', '').replace('www.', '').strip('/')
+        self.target_domain.set(domain)
+        
+        # Get selected categories
+        selected_categories = [cat for cat, var in self.category_vars.items() if var.get()]
+        
+        if not selected_categories:
+            messagebox.showerror("ERROR", "Select at least one intelligence category.")
+            return
+        
+        # Generate queries
+        self.generated_queries = {}
+        query_output = []
+        
+        query_output.append("="*80)
+        query_output.append(f"TACTICAL INTELLIGENCE QUERIES FOR: {domain.upper()}")
+        query_output.append(f"GENERATED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        query_output.append(f"CATEGORIES: {len(selected_categories)} selected")
+        query_output.append("="*80)
+        query_output.append("")
+        
+        total_queries = 0
+        
+        for category in selected_categories:
+            if category in GOOGLE_DORKS:
+                category_queries = []
+                query_output.append(f"◆ {category.upper()}")
+                query_output.append("-" * (len(category) + 2))
+                
+                for i, dork in enumerate(GOOGLE_DORKS[category], 1):
+                    formatted_query = dork.format(domain=domain)
+                    category_queries.append(formatted_query)
+                    query_output.append(f"{i:2d}. {formatted_query}")
+                    total_queries += 1
+                
+                query_output.append("")
+                self.generated_queries[category] = category_queries
+        
+        query_output.append("="*80)
+        query_output.append(f"OPERATION SUMMARY:")
+        query_output.append(f"• Total Queries Generated: {total_queries}")
+        query_output.append(f"• Categories Covered: {len(selected_categories)}")
+        query_output.append(f"• Target Domain: {domain}")
+        query_output.append("")
+        query_output.append("INSTRUCTIONS:")
+        query_output.append("1. Copy individual queries or export all")
+        query_output.append("2. Execute manually in Google Search")
+        query_output.append("3. Analyze results for intelligence value")
+        query_output.append("4. Maintain operational security")
+        query_output.append("="*80)
+        
+        # Display in text area
+        self.queries_text.delete(1.0, tk.END)
+        self.queries_text.insert(tk.END, "\n".join(query_output))
+        
+        # Update status
+        self.status_var.set(f"⚡ QUERIES GENERATED | {total_queries} TACTICAL QUERIES | TARGET: {domain.upper()}")
+
+    def copy_all_queries(self):
+        """Copy all generated queries to clipboard"""
+        if not self.generated_queries:
+            messagebox.showwarning("WARNING", "No queries generated. Execute intelligence generation first.")
+            return
+        
+        try:
+            # Get all text from the text widget
+            all_text = self.queries_text.get(1.0, tk.END)
+            pyperclip.copy(all_text)
+            messagebox.showinfo("SUCCESS", "All tactical queries copied to clipboard!")
+        except Exception as e:
+            messagebox.showerror("ERROR", f"Failed to copy queries: {str(e)}")
+
+    def export_queries(self):
+        """Export queries to file"""
+        if not self.generated_queries:
+            messagebox.showwarning("WARNING", "No queries generated. Execute intelligence generation first.")
+            return
+        
+        domain = self.target_domain.get().strip()
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_filename = f"RECON_OPS_{domain}_{timestamp}.txt"
+        
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+            initialname=default_filename
+        )
+        
+        if filename:
+            try:
+                with open(filename, 'w', encoding='utf-8') as f:
+                    all_text = self.queries_text.get(1.0, tk.END)
+                    f.write(all_text)
+                messagebox.showinfo("SUCCESS", f"Tactical queries exported to:\n{filename}")
+            except Exception as e:
+                messagebox.showerror("ERROR", f"Failed to export queries: {str(e)}")
+
+    def open_queries_in_browser(self):
+        """Open all generated queries in browser tabs for evidence gathering"""
+        if not self.generated_queries:
+            messagebox.showwarning("WARNING", "No queries generated. Execute intelligence generation first.")
+            return
+        
+        # Confirmation dialog with donation link
+        result = messagebox.askyesnocancel(
+            "TACTICAL BROWSER OPERATION", 
+            f"This will open {sum(len(queries) for queries in self.generated_queries.values())} Google Search tabs for evidence gathering.\n\n"
+            "⚡ Perfect for pentest reports and documentation!\n\n"
+            "☕ Support RECON-OPS development:\n"
+            "https://ko-fi.com/macedo84\n\n"
+            "Continue with browser operation?"
+        )
+        
+        if result is None:  # Cancel clicked
+            # Open donation link
+            try:
+                webbrowser.open("https://ko-fi.com/macedo84")
+                messagebox.showinfo("SUPPORT", "Thank you for supporting RECON-OPS development! ☕⚡")
+            except Exception as e:
+                messagebox.showinfo("SUPPORT", "Support link: https://ko-fi.com/macedo84")
+            return
+        elif not result:  # No clicked
+            return
+        
+        # Open queries in browser tabs
+        opened_count = 0
+        max_tabs = 15  # Limit to prevent browser overload
+        
+        try:
+            for category, queries in self.generated_queries.items():
+                for query in queries:
+                    if opened_count >= max_tabs:
+                        messagebox.showwarning(
+                            "TAB LIMIT", 
+                            f"Browser tab limit reached ({max_tabs} tabs).\n"
+                            "Remaining queries available via copy/export functions."
+                        )
+                        break
+                    
+                    # Encode query for URL
+                    encoded_query = urllib.parse.quote_plus(query)
+                    google_url = f"https://www.google.com/search?q={encoded_query}"
+                    
+                    # Open in browser
+                    webbrowser.open_new_tab(google_url)
+                    opened_count += 1
+                
+                if opened_count >= max_tabs:
+                    break
+            
+            # Update status
+            self.status_var.set(f"🌐 BROWSER OPERATION COMPLETE | {opened_count} TABS OPENED | EVIDENCE GATHERING ACTIVE")
+            
+            # Success message
+            messagebox.showinfo(
+                "OPERATION SUCCESS", 
+                f"✅ Browser operation successful!\n\n"
+                f"📊 Opened: {opened_count} Google Search tabs\n"
+                f"🎯 Target: {self.target_domain.get().upper()}\n\n"
+                f"Perfect for evidence gathering and pentest reports!\n\n"
+                f"☕ Support development: https://ko-fi.com/macedo84"
+            )
+            
+        except Exception as e:
+            messagebox.showerror("ERROR", f"Browser operation failed: {str(e)}")
+    
+    def clear_queries(self):
+        """Clear all generated queries"""
+        if messagebox.askyesno("CONFIRM", "Clear all generated intelligence queries?"):
+            self.queries_text.delete(1.0, tk.END)
+            self.generated_queries = {}
+            self.status_var.set(f"⚡ SYSTEM READY | {get_dork_count()} TACTICAL QUERIES LOADED | AWAITING TARGET")
+
+    def select_all_categories(self):
+        """Select all intelligence categories"""
+        for var in self.category_vars.values():
+            var.set(True)
+
+    def clear_all_categories(self):
+        """Clear all category selections"""
+        for var in self.category_vars.values():
+            var.set(False)
+
+def main():
+    """Launch RECON-OPS application"""
+    root = tk.Tk()
+    app = ReconOpsApp(root)
+    
+    # Set window icon if available
+    try:
+        # You can add a custom icon here
+        pass
+    except:
+        pass
+    
+    # Center window on screen
+    root.update_idletasks()
+    x = (root.winfo_screenwidth() // 2) - (root.winfo_width() // 2)
+    y = (root.winfo_screenheight() // 2) - (root.winfo_height() // 2)
+    root.geometry(f"+{x}+{y}")
+    
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()

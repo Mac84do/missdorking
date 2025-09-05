@@ -1,300 +1,221 @@
-# MissDorking - Google Dorking Tool
+# RECON-OPS v2.0 🎯⚡
 
-**A comprehensive, cross-platform Google dorking application for security professionals and researchers.**
+**Tactical Intelligence Gathering System - Google Dork Query Generator**
 
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue)
-![Python](https://img.shields.io/badge/python-3.7%2B-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
-
-## 💖 Support the Project
-
-If you enjoy this tool and find it useful for your security research, please consider supporting the development!
-
-[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/macedo84)
-
-Your support helps maintain and improve MissDorking with new features and updates. Thank you! ☕
-
-## 🚀 Features
-
-- **Cross-Platform**: Runs on Windows and Debian/Ubuntu Linux
-- **Comprehensive Dork Database**: 100+ predefined Google dork queries across 10 categories
-- **🎯 Hybrid Scraper Technology**: Advanced direct site analysis that finds login pages even when Google blocks traditional dorking
-- **Multi-Engine Search**: Fallback support for Bing and DuckDuckGo when Google rate limits
-- **User-Friendly GUI**: Clean tkinter interface with progress tracking
-- **Fun Splash Screen**: Animated MissDorking character with cheeky cybersecurity humor 💋
-- **🧠 Smart Analysis**: AI-powered result analysis with security relevance scoring and risk prioritization
-- **Export Capabilities**: Generate professional PDF reports and CSV files
-- **Rate Limiting**: Built-in delays to respect Google's terms of service
-- **Configurable**: Customizable results per query and delay settings
-- **Category Selection**: Choose specific dork categories to scan
-- **Real-time Progress**: Live progress tracking with detailed status updates
-- **Playful UI**: Fun completion messages and Easter eggs throughout
-
-## 📋 Dork Categories
-
-The tool includes comprehensive dork queries in the following categories:
-
-1. **Information Disclosure** - Find exposed documents and files
-2. **Login Pages** - Discover admin panels and login interfaces
-3. **Configuration Files** - Locate configuration and settings files
-4. **Error Messages** - Find pages with exposed error information
-5. **Database Files** - Search for database backups and dumps
-6. **Directory Listings** - Identify exposed directory structures
-7. **Sensitive Parameters** - Find URLs with potentially vulnerable parameters
-8. **Version Information** - Discover software versions and technologies
-9. **Backup Files** - Locate backup and temporary files
-10. **Email Addresses** - Find contact information and email addresses
-
-## 🛠️ Installation
-
-### Windows Installation
-
-1. **Download and extract** the application files to your desired directory
-2. **Right-click** on `install_windows.bat` and select "Run as administrator"
-3. **Follow the installation prompts**
-
-The installer will:
-- Check for Python 3.7+ installation
-- Create a virtual environment
-- Install all required dependencies
-- Create launch scripts and shortcuts
-
-### Debian/Ubuntu Installation
-
-1. **Download and extract** the application files to your desired directory
-2. **Make the install script executable:**
-   ```bash
-   chmod +x install_debian.sh
-   ```
-3. **Run the installation script:**
-   ```bash
-   ./install_debian.sh
-   ```
-
-The installer will:
-- Install required system packages
-- Check Python installation and version
-- Create a virtual environment
-- Install Python dependencies
-- Create desktop entry and launch scripts
-
-## 🚀 Usage
-
-### Windows
-- Double-click `run_dorking_tool.bat`, or
-- Find "Google Dorking Tool" in your Start Menu
-
-### Linux
-- Run `./run_dorking_tool.sh`, or
-- Find "Google Dorking Tool" in your applications menu
-
-### Using the Application
-
-1. **Enter Target Domain**: Input the domain you want to scan (e.g., `example.com`)
-2. **Configure Options**:
-   - Set results per query (1-50)
-   - Adjust delay between requests (e.g., "2-5" for random delay between 2-5 seconds)
-   - Select categories to scan
-3. **Start Dorking**: Click "Start Dorking" to begin the scan
-4. **Monitor Progress**: Watch the real-time progress and results
-5. **Export Results**: Use "Export PDF" or "Export CSV" to save your findings
-
-## 🎯 Hybrid Scraper Technology
-
-**NEW!** MissDorking now includes advanced hybrid scraper technology that finds login pages and admin panels even when Google blocks traditional dorking queries.
-
-### How It Works
-
-1. **Traditional Google Dorking** - Runs comprehensive dork queries across all selected categories
-2. **Direct Site Analysis** - When Google rate limits occur, automatically switches to direct site analysis:
-   - **Homepage Parsing**: Scans the target homepage for login-related links
-   - **Common Path Enumeration**: Tests common login paths (`/login`, `/admin`, `/account`, etc.)
-   - **Form Analysis**: Detects login forms with password/username fields
-   - **Smart Detection**: Uses AI-powered analysis to identify login indicators
-
-### Hybrid Results Example
-
-```
-=== Login & Admin Pages ===
-site:example.com inurl:login: 0 results  (Google blocked)
-site:example.com inurl:admin: 0 results  (Google blocked)
-
-=== DIRECT SITE ANALYSIS ===
-Direct site analysis of example.com: 4 results
-  🎯 Log in - Example Corp
-    https://example.com/account/login
-  🎯 Admin Portal - Example Corp  
-    https://example.com/admin
-  🎯 Customer Login
-    https://example.com/customer/signin
-  🎯 Management Dashboard
-    https://admin.example.com/
-
-=== SECURITY ASSESSMENT SUMMARY ===
-High Risk Findings: 4
-Login Pages Found: 4
-Sensitive Files: 0
-```
-
-### Advantages
-
-- **🚫 Bypasses Google Rate Limiting** - No more "0 results" due to blocks
-- **🎯 Higher Accuracy** - Direct analysis often finds more login pages than Google search
-- **⚡ Faster Results** - No waiting for Google retry delays
-- **🔍 Comprehensive Coverage** - Combines search engine results with direct analysis
-- **🧠 Smart Scoring** - AI-powered risk assessment and confidence scoring
-
-## 📊 Sample Output
-
-The application displays results in real-time:
-
-```
-=== Information Disclosure ===
-site:example.com filetype:pdf: 15 results
-  • Annual Report 2023 - Example Corp
-    https://example.com/reports/annual_report_2023.pdf
-  • Technical Documentation
-    https://example.com/docs/tech_manual.pdf
-  ... and 13 more results
-
-=== Login Pages ===
-site:example.com inurl:admin: 3 results
-  • Admin Panel - Example Corp
-    https://example.com/admin/login
-  ...
-```
-
-## 📄 Export Formats
-
-### PDF Report
-- Professional formatted report with executive summary
-- Organized by category with detailed results
-- Includes metadata and generation timestamp
-- Perfect for documentation and reporting
-
-### CSV Export
-- Structured data format for analysis
-- Fields: Category, Query, Title, URL, Snippet, Timestamp
-- Easy to import into spreadsheet applications
-- Suitable for further data processing
-
-## ⚠️ Important Notes
-
-### Legal and Ethical Use
-- **Only use this tool for authorized security testing**
-- **Obtain proper permission** before scanning domains you don't own
-- **Respect Google's Terms of Service** and rate limits
-- **Use responsibly** for legitimate security research purposes
-
-### Rate Limiting
-- The tool includes built-in delays between requests
-- Default delay is 2-5 seconds (randomized)
-- Adjust delays based on your specific requirements
-- Higher delays reduce the chance of being blocked
-
-### Limitations
-- Results depend on what Google has indexed
-- Some queries may return fewer results due to Google's algorithms
-- Rate limiting may slow down large scans
-- Results may vary based on geographic location and Google's regional differences
-
-## 🛠️ Technical Details
-
-### Requirements
-- Python 3.7 or higher
-- tkinter (usually included with Python)
-- Internet connection for Google searches
-
-### Dependencies
-- `requests` - HTTP library for web requests
-- `beautifulsoup4` - HTML parsing
-- `lxml` - XML/HTML parser
-- `reportlab` - PDF generation
-- `fake-useragent` - User agent rotation
-- `python-dateutil` - Date/time utilities
-
-### Architecture
-The application is built with a modular design:
-
-- `main_gui.py` - Main application and GUI
-- `google_dorks.py` - Dork query database and management
-- `scraper.py` - Web scraping and Google search functionality
-- `export.py` - PDF and CSV export capabilities
-
-## 🔧 Configuration
-
-### Customizing Dork Queries
-You can modify `google_dorks.py` to add your own dork queries:
-
-```python
-GOOGLE_DORKS = {
-    "Custom Category": [
-        'site:{domain} "custom query"',
-        'site:{domain} filetype:custom',
-        # Add more queries...
-    ]
-}
-```
-
-### Adjusting Delays
-Modify the delay range in the GUI or programmatically:
-
-```python
-scraper.delay_range = (3, 8)  # 3-8 second delay range
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**"Python not found" error:**
-- Ensure Python 3.7+ is installed and in your system PATH
-- On Windows, reinstall Python with "Add to PATH" option checked
-
-**"Failed to install requirements" error:**
-- Check your internet connection
-- Try running the installer as administrator (Windows)
-- On Linux, ensure you have python3-dev installed
-
-**GUI doesn't start:**
-- Ensure tkinter is installed (`python -m tkinter` should open a test window)
-- On Linux: `sudo apt install python3-tk`
-
-**No search results:**
-- Check if the domain exists and is indexed by Google
-- Try different dork categories
-- Verify your internet connection
-- Consider if you've been rate-limited by Google
-
-### Logs
-The application creates `dorking_app.log` with detailed logging information for troubleshooting.
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
-
-### Areas for Contribution
-- Additional dork query categories
-- New export formats
-- UI/UX improvements
-- Platform support (macOS)
-- Performance optimizations
-
-## 📞 Support
-
-For support, please:
-1. Check the troubleshooting section
-2. Review the application logs
-3. Open an issue on the project repository
-
-## ⚖️ Disclaimer
-
-This tool is for educational and authorized security testing purposes only. Users are responsible for complying with applicable laws and regulations. The developers assume no liability for misuse of this software.
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.6%2B-blue.svg)](https://www.python.org/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](https://github.com/)
 
 ---
 
-**Happy Dorking! 🎯**
+## 🔥 **HARDCORE MILITARY-STYLE DORK GENERATOR**
+
+RECON-OPS is a **hardcore, military-themed Google Dork query generator** designed for tactical intelligence operations. Unlike traditional scanning tools, RECON-OPS focuses on **pure query generation** for manual execution, providing:
+
+- ⚡ **INSTANT RESULTS** (No 8+ hour scanning)
+- 🛡️ **ZERO NETWORK EXPOSURE** (Complete operational security) 
+- 🎯 **100% MANUAL CONTROL** (Execute queries yourself)
+- 🔥 **MILITARY-GRADE INTERFACE** (Tactical dark theme)
+
+---
+
+## 🚀 **QUICK START**
+
+### Installation
+```bash
+# Clone repository
+git clone <repository_url>
+cd missdorking
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Launch RECON-OPS
+python recon_ops.py
+```
+
+### Windows Users
+```cmd
+# Double-click to run
+run_recon_ops.bat
+```
+
+---
+
+## 🎯 **KEY FEATURES**
+
+### **🔥 Tactical Interface**
+- Military-style dark theme with Matrix-green accents
+- ASCII tactical banner
+- Professional operational terminology
+- Real-time mission status updates
+
+### **⚡ Instant Query Generation** 
+- **20 intelligence categories** with 60+ queries
+- Instant generation (vs 8+ hours of scanning)
+- Copy to clipboard functionality
+- **Export to text files** for team distribution
+- **🌐 Multi-tab browser opening** for evidence gathering
+- Zero network footprint
+
+### **🛡️ Complete Operational Security**
+- No active scanning or probing
+- All intelligence gathering is manual
+- Zero detection risk
+- 100% user-controlled execution
+
+---
+
+## 📊 **INTELLIGENCE CATEGORIES**
+
+RECON-OPS covers **20 comprehensive intelligence categories**:
+
+- 📄 **Document Files** - PDFs, Office docs, archives  
+- 🔐 **Login & Admin Pages** - Authentication portals
+- ⚙️ **Configuration Files** - Settings, configs, env files
+- 🐛 **Error & Debug Info** - Stack traces, error pages
+- 🗄️ **Database Files** - SQL dumps, database files
+- 📁 **Directory Listings** - Open directories
+- 🎯 **Vulnerable Parameters** - URL parameters
+- 🔧 **Technology Stack** - Framework detection
+- 💾 **Backup & Temp Files** - Backup files, temp data
+- 🔒 **Sensitive Info** - Passwords, keys, secrets
+- 📋 **Log Files** - System and application logs
+- ☁️ **Cloud & API Info** - Cloud services, APIs
+- 💻 **Source Code Files** - Code repositories
+- 🛡️ **Security & Certificates** - Certs, keys
+- 🚧 **Development & Testing** - Dev environments
+- 🌐 **Network & Infrastructure** - Network configs
+- 📧 **Email & Communications** - Contact info
+- 🔑 **Passwords & Credentials** - Authentication data
+- 📑 **Sensitive Documents** - Confidential files  
+- 🔄 **Git & Version Control** - Repository data
+- 📈 **Monitoring & Analytics** - Dashboards, metrics
+
+---
+
+## 🎖️ **TACTICAL ADVANTAGES**
+
+| **Old Scanning Tools** | **RECON-OPS v2.0** |
+|------------------------|---------------------|
+| 8+ hours per domain    | **⚡ Instant generation** |
+| Network exposure risk  | **🛡️ Zero footprint** |
+| Detection alerts       | **👻 Complete stealth** |
+| Automated scanning     | **🎯 Manual control** |
+| Basic interface        | **🔥 Military-grade UI** |
+
+---
+
+## 📋 **OPERATIONAL PROCEDURE**
+
+### 1. **🎯 Target Acquisition**
+Enter your target domain in the tactical interface
+
+### 2. **📊 Category Selection** 
+Choose intelligence categories (all selected by default)
+
+### 3. **⚡ Query Generation**
+Click "GENERATE INTEL QUERIES" for instant results
+
+### 4. **📋 Intelligence Extraction**
+- **Copy queries** to clipboard for immediate use
+- **Export to file** for team distribution  
+- **Manual execution** in Google Search
+
+### 5. **🛡️ Operational Security**
+Execute all queries manually while maintaining OPSEC protocols
+
+---
+
+## 🎯 **SAMPLE OUTPUT**
+
+```
+================================================================================
+TACTICAL INTELLIGENCE QUERIES FOR: EXAMPLE.COM
+GENERATED: 2024-01-15 14:30:45
+CATEGORIES: 3 selected
+================================================================================
+
+◆ LOGIN & ADMIN PAGES
+--------------------
+ 1. site:example.com (inurl:login OR inurl:signin OR inurl:admin)
+ 2. site:example.com (intitle:"login" OR intitle:"admin panel")
+
+◆ CONFIGURATION FILES  
+--------------------
+ 1. site:example.com (filetype:env OR filetype:config)
+ 2. site:example.com ("config.php" OR ".htaccess")
+
+================================================================================
+OPERATION SUMMARY:
+• Total Queries Generated: 4
+• Categories Covered: 2  
+• Target Domain: example.com
+
+INSTRUCTIONS:
+1. Copy individual queries or export all
+2. Execute manually in Google Search
+3. Analyze results for intelligence value
+4. Maintain operational security
+================================================================================
+```
+
+---
+
+## 🔒 **SECURITY & COMPLIANCE**
+
+- **Passive Intelligence**: All queries require manual execution
+- **No Network Activity**: Zero scanning or probing
+- **Legal Compliance**: Ensure activities comply with applicable laws
+- **OPSEC Protocols**: Maintain operational security during execution
+
+---
+
+## 🎖️ **MISSION CLASSIFICATION**
+
+**Classification**: UNCLASSIFIED  
+**Operational Status**: ACTIVE  
+**Tactical Readiness**: IMMEDIATE DEPLOYMENT  
+
+---
+
+## 📁 **REPOSITORY STRUCTURE**
+
+```
+📦 missdorking/
+├── 🎯 recon_ops.py              # Main tactical application
+├── 📊 google_dorks.py           # Intelligence query database  
+├── 🚀 run_recon_ops.bat         # Windows launcher
+├── 📋 requirements.txt          # Dependencies
+├── 📖 README.md                 # This file
+├── 📑 RECON_OPS_README.md       # Detailed operational manual
+├── ⚖️ LICENSE                  # MIT license
+└── 🛡️ .gitignore              # Git ignore rules
+```
+
+---
+
+## 🤝 **CONTRIBUTING**
+
+This is a tactical intelligence tool focused on **query generation only**. 
+
+**❌ NO SCANNING FEATURES** - This repository is dedicated to pure query generation for manual execution.
+
+---
+
+## ⚖️ **LICENSE**
+
+MIT License - See [LICENSE](LICENSE) file for details.
+
+---
+
+## 🎯 **RECON-OPS v2.0**
+*Advanced Google Dork Query Generator for Intelligence Operations*
+
+**Author**: Tactical Operations Team  
+**Version**: 2.0.0  
+**Status**: OPERATIONAL ⚡
+
+---
+
+**🚀 Ready for immediate tactical deployment!**

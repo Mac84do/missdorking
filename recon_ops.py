@@ -30,8 +30,9 @@ class ReconOpsApp:
     def __init__(self, root):
         self.root = root
         self.root.title("RECON-OPS v2.0 - Tactical Intelligence Platform")
-        self.root.geometry("1400x900")
+        self.root.geometry("1400x1000")  # Increased height to ensure buttons are visible
         self.root.configure(bg='#0a0a0a')
+        self.root.minsize(1200, 800)  # Set minimum size to prevent layout issues
         
         # Military color scheme
         self.colors = {
@@ -205,74 +206,59 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
 
     def create_widgets(self):
         """Create main application interface"""
-        # Main container
-        main_frame = ttk.Frame(self.root, style='Military.TFrame', padding="20")
+        # Main container with fixed structure
+        main_frame = ttk.Frame(self.root, style='Military.TFrame', padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Banner
-        self.create_banner(main_frame)
+        # TOP SECTION - Banner (Fixed height)
+        top_frame = ttk.Frame(main_frame, style='Military.TFrame')
+        top_frame.pack(fill=tk.X, pady=(0, 10))
+        self.create_banner(top_frame)
         
-        # Mission briefing
-        brief_frame = ttk.LabelFrame(main_frame, text="[ MISSION BRIEFING ]", 
-                                   padding="15")
-        brief_frame.pack(fill=tk.X, pady=(0, 20))
+        # MIDDLE SECTION - Controls (Fixed height)
+        controls_frame = ttk.Frame(main_frame, style='Military.TFrame')
+        controls_frame.pack(fill=tk.X, pady=(0, 10))
         
-        brief_text = ("OBJECTIVE: Generate tactical Google dork queries for manual intelligence gathering operations.\n"
-                     "METHOD: Input target domain, select intelligence categories, execute generated queries manually.\n"
-                     "ADVANTAGE: Zero network exposure, complete operational security, 100% manual control.")
-        
-        brief_label = tk.Label(brief_frame,
-                              text=brief_text,
-                              foreground=self.colors['text_secondary'],
-                              background=self.colors['bg_primary'],
-                              font=('Consolas', 9),
-                              justify=tk.LEFT,
-                              wraplength=1200)
-        brief_label.pack(anchor=tk.W)
-        
-        # Target acquisition
-        target_frame = ttk.LabelFrame(main_frame, text="[ TARGET ACQUISITION ]",
-                                    padding="15")
-        target_frame.pack(fill=tk.X, pady=(0, 20))
+        # Target input - COMPACT
+        target_frame = ttk.LabelFrame(controls_frame, text="[ TARGET ACQUISITION ]", padding="10")
+        target_frame.pack(fill=tk.X, pady=(0, 10))
         
         target_input_frame = ttk.Frame(target_frame, style='Military.TFrame')
         target_input_frame.pack(fill=tk.X)
         
-        ttk.Label(target_input_frame, text="TARGET DOMAIN:",
-                 style='Military.TLabel').pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(target_input_frame, text="DOMAIN:", style='Military.TLabel').pack(side=tk.LEFT, padx=(0, 10))
         
         self.domain_entry = ttk.Entry(target_input_frame, 
                                      textvariable=self.target_domain,
                                      style='Military.TEntry',
-                                     width=50)
-        self.domain_entry.pack(side=tk.LEFT, padx=(0, 20), fill=tk.X, expand=True)
+                                     width=40)
+        self.domain_entry.pack(side=tk.LEFT, padx=(0, 10), fill=tk.X, expand=True)
         self.domain_entry.bind('<Return>', self.generate_queries)
         
         self.generate_btn = ttk.Button(target_input_frame, 
-                                     text="⚡ GENERATE INTEL QUERIES",
+                                     text="⚡ GENERATE",
                                      command=self.generate_queries,
                                      style='Tactical.TButton')
         self.generate_btn.pack(side=tk.RIGHT)
         
-        # Intel categories selection
-        categories_frame = ttk.LabelFrame(main_frame, text="[ INTELLIGENCE CATEGORIES ]",
-                                        padding="15")
-        categories_frame.pack(fill=tk.X, pady=(0, 20))
-        
-        # Create category checkboxes
+        # Categories - COMPACT
+        categories_frame = ttk.LabelFrame(controls_frame, text="[ CATEGORIES ]", padding="10")
+        categories_frame.pack(fill=tk.X, pady=(0, 10))
         self.create_category_selection(categories_frame)
         
-        # Generated queries display
-        queries_frame = ttk.LabelFrame(main_frame, text="[ GENERATED TACTICAL QUERIES ]",
-                                     padding="15")
-        queries_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
+        # QUERIES SECTION - Limited height
+        queries_main_frame = ttk.Frame(main_frame, style='Military.TFrame')
+        queries_main_frame.pack(fill=tk.X, pady=(0, 10))
         
-        # Queries text area with military styling
+        queries_frame = ttk.LabelFrame(queries_main_frame, text="[ TACTICAL QUERIES ]", padding="10")
+        queries_frame.pack(fill=tk.X)
+        
+        # FIXED HEIGHT text area
         self.queries_text = scrolledtext.ScrolledText(
             queries_frame,
-            height=20,
-            width=100,
-            font=('Consolas', 9),
+            height=12,  # FIXED small height
+            width=80,
+            font=('Consolas', 8),
             bg=self.colors['bg_secondary'],
             fg=self.colors['text_primary'],
             insertbackground=self.colors['accent_green'],
@@ -281,48 +267,50 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
             relief='solid',
             borderwidth=2
         )
-        self.queries_text.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        self.queries_text.pack(fill=tk.X, pady=(0, 10))
         
-        # Command buttons
-        command_frame = ttk.Frame(queries_frame, style='Military.TFrame')
+        # BOTTOM SECTION - GUARANTEED VISIBLE BUTTONS
+        bottom_frame = ttk.Frame(main_frame, style='Military.TFrame')
+        bottom_frame.pack(fill=tk.X, side=tk.BOTTOM)
+        
+        # Command buttons frame - ALWAYS AT BOTTOM
+        command_frame = ttk.Frame(bottom_frame, style='Military.TFrame', padding="10")
         command_frame.pack(fill=tk.X)
         
-        ttk.Button(command_frame, text="📋 COPY ALL QUERIES",
+        # BIG VISIBLE BUTTONS
+        btn_frame = ttk.Frame(command_frame, style='Military.TFrame')
+        btn_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        # First row of buttons
+        btn_row1 = ttk.Frame(btn_frame, style='Military.TFrame')
+        btn_row1.pack(fill=tk.X, pady=(0, 5))
+        
+        ttk.Button(btn_row1, text="📋 COPY ALL",
                   command=self.copy_all_queries, style='Command.TButton').pack(side=tk.LEFT, padx=(0, 10))
         
-        ttk.Button(command_frame, text="💾 EXPORT QUERIES",
+        ttk.Button(btn_row1, text="💾 EXPORT",
                   command=self.export_queries, style='Command.TButton').pack(side=tk.LEFT, padx=(0, 10))
         
-        ttk.Button(command_frame, text="🌐 OPEN IN BROWSER",
-                  command=self.open_queries_in_browser, style='Command.TButton').pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_row1, text="🌐 OPEN BROWSER",
+                  command=self.open_queries_in_browser, style='Tactical.TButton').pack(side=tk.LEFT, padx=(0, 10))
         
-        ttk.Button(command_frame, text="🗑️ CLEAR INTEL",
-                  command=self.clear_queries, style='Danger.TButton').pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_row1, text="🗑️ CLEAR",
+                  command=self.clear_queries, style='Danger.TButton').pack(side=tk.LEFT)
         
-        # Status bar
-        status_frame = ttk.Frame(main_frame, style='Panel.TFrame', padding="10")
+        # Status bar - ALWAYS VISIBLE
+        status_frame = ttk.Frame(bottom_frame, style='Panel.TFrame', padding="5")
         status_frame.pack(fill=tk.X)
         
-        self.status_var = tk.StringVar(value=f"⚡ SYSTEM READY | {get_dork_count()} TACTICAL QUERIES LOADED | AWAITING TARGET")
+        self.status_var = tk.StringVar(value=f"⚡ RECON-OPS READY | {get_dork_count()} QUERIES LOADED")
         status_label = ttk.Label(status_frame, textvariable=self.status_var, style='Status.TLabel')
         status_label.pack(side=tk.LEFT)
         
-        # Mission time and donation
-        right_status_frame = ttk.Frame(status_frame, style='Panel.TFrame')
-        right_status_frame.pack(side=tk.RIGHT)
-        
-        # Donation link (clickable)
-        donate_label = ttk.Label(right_status_frame, 
-                               text="☕ Support: ko-fi.com/macedo84",
-                               style='Status.TLabel',
-                               cursor='hand2')
-        donate_label.pack(side=tk.RIGHT, padx=(0, 20))
-        donate_label.bind('<Button-1>', lambda e: webbrowser.open('https://ko-fi.com/macedo84'))
-        
-        time_label = ttk.Label(right_status_frame, 
-                             text=f"MISSION TIME: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                             style='Status.TLabel')
-        time_label.pack(side=tk.RIGHT)
+        # DONATION BUTTON - BIG AND VISIBLE
+        donate_btn = ttk.Button(status_frame, 
+                               text="☕ DONATE",
+                               command=lambda: webbrowser.open('https://ko-fi.com/macedo84'),
+                               style='Command.TButton')
+        donate_btn.pack(side=tk.RIGHT, padx=(10, 0))
 
     def create_category_selection(self, parent):
         """Create intelligence category selection checkboxes"""

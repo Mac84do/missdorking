@@ -52,6 +52,7 @@ class ReconOpsApp:
         self.target_domain = tk.StringVar()
         self.generated_queries = {}
         self.category_vars = {}
+        self.browser_offset = 0  # Track which queries have been opened
         
         # Initialize UI
         self.setup_styles()
@@ -204,6 +205,83 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
                            font=('Consolas', 10, 'bold'))
         subtitle.pack(pady=(5, 0))
 
+    def create_donation_section(self, parent):
+        """Create prominent donation section"""
+        donation_frame = ttk.Frame(parent, style='Panel.TFrame', padding="15")
+        donation_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        # Main donation container
+        donation_container = ttk.Frame(donation_frame, style='Panel.TFrame')
+        donation_container.pack(fill=tk.X)
+        
+        # Left side - Message
+        left_frame = ttk.Frame(donation_container, style='Panel.TFrame')
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Coffee emoji and title
+        title_frame = ttk.Frame(left_frame, style='Panel.TFrame')
+        title_frame.pack(anchor=tk.W, pady=(0, 5))
+        
+        coffee_label = tk.Label(title_frame,
+                               text="☕",
+                               foreground='#ffb000',
+                               background=self.colors['bg_secondary'],
+                               font=('Consolas', 20, 'bold'))
+        coffee_label.pack(side=tk.LEFT, padx=(0, 10))
+        
+        title_label = tk.Label(title_frame,
+                              text="SUPPORT RECON-OPS DEVELOPMENT",
+                              foreground=self.colors['accent_amber'],
+                              background=self.colors['bg_secondary'],
+                              font=('Consolas', 12, 'bold'))
+        title_label.pack(side=tk.LEFT, anchor=tk.W)
+        
+        # Description
+        desc_label = tk.Label(left_frame,
+                             text="Help keep this tactical tool free and updated! Your support enables new features,\nbug fixes, and continued development. Every coffee helps! 🎯⚡",
+                             foreground=self.colors['text_secondary'],
+                             background=self.colors['bg_secondary'],
+                             font=('Consolas', 9),
+                             justify=tk.LEFT)
+        desc_label.pack(anchor=tk.W, pady=(0, 5))
+        
+        # Right side - Donation button
+        right_frame = ttk.Frame(donation_container, style='Panel.TFrame')
+        right_frame.pack(side=tk.RIGHT, padx=(20, 0))
+        
+        # Big prominent donation button
+        donate_big_btn = tk.Button(right_frame,
+                                  text="☕ BUY ME A COFFEE",
+                                  command=lambda: webbrowser.open('https://ko-fi.com/macedo84'),
+                                  bg='#ff813f',  # Ko-fi orange color
+                                  fg='white',
+                                  font=('Consolas', 14, 'bold'),
+                                  relief='flat',
+                                  borderwidth=0,
+                                  padx=30,
+                                  pady=15,
+                                  cursor='hand2')
+        donate_big_btn.pack()
+        
+        # Hover effects
+        def on_enter(e):
+            donate_big_btn.config(bg='#e66f2e')
+        def on_leave(e):
+            donate_big_btn.config(bg='#ff813f')
+            
+        donate_big_btn.bind('<Enter>', on_enter)
+        donate_big_btn.bind('<Leave>', on_leave)
+        
+        # Ko-fi link
+        link_label = tk.Label(right_frame,
+                             text="ko-fi.com/macedo84",
+                             foreground=self.colors['accent_green'],
+                             background=self.colors['bg_secondary'],
+                             font=('Consolas', 8),
+                             cursor='hand2')
+        link_label.pack(pady=(5, 0))
+        link_label.bind('<Button-1>', lambda e: webbrowser.open('https://ko-fi.com/macedo84'))
+
     def create_widgets(self):
         """Create main application interface"""
         # Main container with fixed structure
@@ -214,6 +292,9 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
         top_frame = ttk.Frame(main_frame, style='Military.TFrame')
         top_frame.pack(fill=tk.X, pady=(0, 10))
         self.create_banner(top_frame)
+        
+        # DONATION SECTION - Prominent display
+        self.create_donation_section(main_frame)
         
         # MIDDLE SECTION - Controls (Fixed height)
         controls_frame = ttk.Frame(main_frame, style='Military.TFrame')
@@ -369,6 +450,7 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
         
         # Generate queries
         self.generated_queries = {}
+        self.browser_offset = 0  # Reset browser batch tracking for new queries
         query_output = []
         
         query_output.append("="*80)
@@ -454,28 +536,58 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
             except Exception as e:
                 messagebox.showerror("ERROR", f"Failed to export queries: {str(e)}")
 
+    def get_all_queries_flat(self):
+        """Get all queries as a flat list for batch processing"""
+        all_queries = []
+        for category, queries in self.generated_queries.items():
+            all_queries.extend(queries)
+        return all_queries
+
     def open_queries_in_browser(self):
-        """Open all generated queries in browser tabs for evidence gathering"""
+        """Open queries in browser tabs with batch processing support"""
         if not self.generated_queries:
             messagebox.showwarning("WARNING", "No queries generated. Execute intelligence generation first.")
             return
         
-        # Confirmation dialog with donation link
+        # Get all queries as flat list
+        all_queries = self.get_all_queries_flat()
+        total_queries = len(all_queries)
+        remaining_queries = total_queries - self.browser_offset
+        
+        if remaining_queries <= 0:
+            # All queries have been opened, offer to restart
+            result = messagebox.askyesno(
+                "ALL QUERIES OPENED",
+                f"All {total_queries} queries have been opened in browser tabs.\n\n"
+                "Do you want to restart from the beginning?"
+            )
+            if result:
+                self.browser_offset = 0
+                remaining_queries = total_queries
+            else:
+                return
+        
+        # Determine how many tabs to open in this batch
+        max_tabs_per_batch = 15
+        tabs_to_open = min(remaining_queries, max_tabs_per_batch)
+        
+        # Confirmation dialog
+        batch_info = f"BATCH {(self.browser_offset // max_tabs_per_batch) + 1}"
         result = messagebox.askyesnocancel(
-            "TACTICAL BROWSER OPERATION", 
-            f"This will open {sum(len(queries) for queries in self.generated_queries.values())} Google Search tabs for evidence gathering.\n\n"
-            "⚡ Perfect for pentest reports and documentation!\n\n"
-            "☕ Support RECON-OPS development:\n"
-            "https://ko-fi.com/macedo84\n\n"
+            f"TACTICAL BROWSER OPERATION - {batch_info}", 
+            f"Opening queries {self.browser_offset + 1} to {self.browser_offset + tabs_to_open} of {total_queries}\n\n"
+            f"📊 This batch: {tabs_to_open} tabs\n"
+            f"⏳ Remaining after this batch: {remaining_queries - tabs_to_open} queries\n\n"
+            "⚡ Perfect for evidence gathering and pentest reports!\n\n"
+            "☕ Support RECON-OPS: https://ko-fi.com/macedo84\n\n"
             "Continue with browser operation?"
         )
         
-        if result is None:  # Cancel clicked
-            # Open donation link
+        if result is None:  # Cancel clicked - open donation
             try:
                 webbrowser.open("https://ko-fi.com/macedo84")
                 messagebox.showinfo("SUPPORT", "Thank you for supporting RECON-OPS development! ☕⚡")
-            except Exception as e:
+            except:
                 messagebox.showinfo("SUPPORT", "Support link: https://ko-fi.com/macedo84")
             return
         elif not result:  # No clicked
@@ -483,42 +595,53 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
         
         # Open queries in browser tabs
         opened_count = 0
-        max_tabs = 15  # Limit to prevent browser overload
+        start_index = self.browser_offset
+        end_index = min(start_index + max_tabs_per_batch, total_queries)
         
         try:
-            for category, queries in self.generated_queries.items():
-                for query in queries:
-                    if opened_count >= max_tabs:
-                        messagebox.showwarning(
-                            "TAB LIMIT", 
-                            f"Browser tab limit reached ({max_tabs} tabs).\n"
-                            "Remaining queries available via copy/export functions."
-                        )
-                        break
-                    
-                    # Encode query for URL
-                    encoded_query = urllib.parse.quote_plus(query)
-                    google_url = f"https://www.google.com/search?q={encoded_query}"
-                    
-                    # Open in browser
-                    webbrowser.open_new_tab(google_url)
-                    opened_count += 1
+            for i in range(start_index, end_index):
+                query = all_queries[i]
                 
-                if opened_count >= max_tabs:
-                    break
+                # Encode query for URL
+                encoded_query = urllib.parse.quote_plus(query)
+                google_url = f"https://www.google.com/search?q={encoded_query}"
+                
+                # Open in browser
+                webbrowser.open_new_tab(google_url)
+                opened_count += 1
+            
+            # Update offset for next batch
+            self.browser_offset += opened_count
+            remaining_after_batch = total_queries - self.browser_offset
             
             # Update status
-            self.status_var.set(f"🌐 BROWSER OPERATION COMPLETE | {opened_count} TABS OPENED | EVIDENCE GATHERING ACTIVE")
+            if remaining_after_batch > 0:
+                self.status_var.set(f"🌐 BATCH COMPLETE | {opened_count} TABS OPENED | {remaining_after_batch} QUERIES REMAINING")
+            else:
+                self.status_var.set(f"🌐 ALL QUERIES OPENED | {total_queries} TOTAL TABS | EVIDENCE GATHERING COMPLETE")
             
-            # Success message
-            messagebox.showinfo(
-                "OPERATION SUCCESS", 
-                f"✅ Browser operation successful!\n\n"
-                f"📊 Opened: {opened_count} Google Search tabs\n"
-                f"🎯 Target: {self.target_domain.get().upper()}\n\n"
-                f"Perfect for evidence gathering and pentest reports!\n\n"
-                f"☕ Support development: https://ko-fi.com/macedo84"
-            )
+            # Success message with next steps
+            if remaining_after_batch > 0:
+                next_batch_size = min(remaining_after_batch, max_tabs_per_batch)
+                messagebox.showinfo(
+                    "BATCH OPERATION SUCCESS", 
+                    f"✅ Batch {(start_index // max_tabs_per_batch) + 1} opened successfully!\n\n"
+                    f"📊 This batch: {opened_count} Google Search tabs\n"
+                    f"🎯 Target: {self.target_domain.get().upper()}\n\n"
+                    f"⏭️ NEXT: {remaining_after_batch} queries remaining\n"
+                    f"📝 Click '🌐 OPEN BROWSER' again to open next {next_batch_size} tabs\n\n"
+                    f"☕ Support development: https://ko-fi.com/macedo84"
+                )
+            else:
+                messagebox.showinfo(
+                    "ALL QUERIES OPENED", 
+                    f"🎉 ALL QUERIES COMPLETED!\n\n"
+                    f"📊 Total opened: {total_queries} Google Search tabs\n"
+                    f"🎯 Target: {self.target_domain.get().upper()}\n\n"
+                    f"✅ Evidence gathering phase complete!\n"
+                    f"📝 Perfect for pentest reports and documentation\n\n"
+                    f"☕ Support development: https://ko-fi.com/macedo84"
+                )
             
         except Exception as e:
             messagebox.showerror("ERROR", f"Browser operation failed: {str(e)}")
@@ -528,6 +651,7 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
         if messagebox.askyesno("CONFIRM", "Clear all generated intelligence queries?"):
             self.queries_text.delete(1.0, tk.END)
             self.generated_queries = {}
+            self.browser_offset = 0  # Reset browser batch tracking
             self.status_var.set(f"⚡ SYSTEM READY | {get_dork_count()} TACTICAL QUERIES LOADED | AWAITING TARGET")
 
     def select_all_categories(self):

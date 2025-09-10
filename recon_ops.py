@@ -30,9 +30,44 @@ class ReconOpsApp:
     def __init__(self, root):
         self.root = root
         self.root.title("RECON-OPS v2.0 - Tactical Intelligence Platform")
-        self.root.geometry("1400x1000")  # Increased height to ensure buttons are visible
+        
+        # Get screen dimensions for responsive sizing
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        # Load saved window settings or use defaults
+        self.config_file = "recon_ops_settings.json"
+        self.window_settings = self.load_window_settings()
+        
+        # Calculate responsive window size with user preferences
+        if self.window_settings.get('remember_size', True):
+            window_width = self.window_settings.get('width', min(max(1000, int(screen_width * 0.75)), 1400))
+            window_height = self.window_settings.get('height', min(max(700, int(screen_height * 0.75)), 1000))
+        else:
+            window_width = min(max(1000, int(screen_width * 0.75)), 1400)
+            window_height = min(max(700, int(screen_height * 0.75)), 1000)
+        
+        # Set initial geometry
+        self.root.geometry(f"{window_width}x{window_height}")
         self.root.configure(bg='#0a0a0a')
-        self.root.minsize(1200, 800)  # Set minimum size to prevent layout issues
+        
+        # Set more reasonable minimum size for better usability
+        self.root.minsize(800, 600)
+        
+        # Make window resizable and set maximum size
+        self.root.resizable(True, True)
+        self.root.maxsize(screen_width, screen_height)
+        
+        # Auto-maximize if preferred by user or if screen is small
+        if (self.window_settings.get('start_maximized', False) or 
+            screen_width <= 1366 or screen_height <= 768):  # Maximize on smaller screens
+            try:
+                self.root.state('zoomed')  # Windows equivalent of maximize
+            except:
+                pass  # Fallback gracefully if zoomed is not supported
+        
+        # Bind window closing event to save settings
+        self.root.protocol("WM_DELETE_WINDOW", self.on_window_close)
         
         # Military color scheme
         self.colors = {
@@ -327,28 +362,27 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
         categories_frame.pack(fill=tk.X, pady=(0, 10))
         self.create_category_selection(categories_frame)
         
-        # QUERIES SECTION - Limited height
+        # QUERIES SECTION - Expandable with flexible height
         queries_main_frame = ttk.Frame(main_frame, style='Military.TFrame')
-        queries_main_frame.pack(fill=tk.X, pady=(0, 10))
+        queries_main_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
         
         queries_frame = ttk.LabelFrame(queries_main_frame, text="[ TACTICAL QUERIES ]", padding="10")
-        queries_frame.pack(fill=tk.X)
+        queries_frame.pack(fill=tk.BOTH, expand=True)
         
-        # FIXED HEIGHT text area
+        # RESPONSIVE text area that expands with window
         self.queries_text = scrolledtext.ScrolledText(
             queries_frame,
-            height=12,  # FIXED small height
-            width=80,
-            font=('Consolas', 8),
+            font=('Consolas', 9),  # Slightly larger font for better readability
             bg=self.colors['bg_secondary'],
             fg=self.colors['text_primary'],
             insertbackground=self.colors['accent_green'],
             selectbackground=self.colors['accent_green'],
             selectforeground=self.colors['bg_primary'],
             relief='solid',
-            borderwidth=2
+            borderwidth=2,
+            wrap=tk.WORD  # Enable word wrapping for better text flow
         )
-        self.queries_text.pack(fill=tk.X, pady=(0, 10))
+        self.queries_text.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
         
         # BOTTOM SECTION - GUARANTEED VISIBLE BUTTONS
         bottom_frame = ttk.Frame(main_frame, style='Military.TFrame')
@@ -663,6 +697,53 @@ TACTICAL INTELLIGENCE GATHERING SYSTEM
         """Clear all category selections"""
         for var in self.category_vars.values():
             var.set(False)
+            
+    def load_window_settings(self):
+        """Load window settings from config file"""
+        default_settings = {
+            'width': 1200,
+            'height': 900,
+            'remember_size': True,
+            'start_maximized': False
+        }
+        
+        try:
+            if os.path.exists(self.config_file):
+                with open(self.config_file, 'r') as f:
+                    settings = json.load(f)
+                    # Merge with defaults to handle missing keys
+                    for key, value in default_settings.items():
+                        if key not in settings:
+                            settings[key] = value
+                    return settings
+        except Exception:
+            pass  # Silently fall back to defaults on any error
+            
+        return default_settings
+    
+    def save_window_settings(self):
+        """Save current window settings to config file"""
+        try:
+            settings = {
+                'width': self.root.winfo_width(),
+                'height': self.root.winfo_height(),
+                'remember_size': self.window_settings.get('remember_size', True),
+                'start_maximized': self.window_settings.get('start_maximized', False)
+            }
+            
+            with open(self.config_file, 'w') as f:
+                json.dump(settings, f, indent=2)
+        except Exception:
+            pass  # Silently fail - don't interrupt user experience
+    
+    def on_window_close(self):
+        """Handle window closing event"""
+        # Save window settings before closing
+        if self.window_settings.get('remember_size', True):
+            self.save_window_settings()
+        
+        # Close the application
+        self.root.destroy()
 
 def main():
     """Launch RECON-OPS application"""
